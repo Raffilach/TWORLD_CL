@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.permissions import IsOwnerOrGlobalReadOnly, TokenScopePermission
 from apps.core.viewsets import OwnedModelViewSet
 from apps.safety.services import limits_for_exercise
 
@@ -29,6 +30,8 @@ class ExerciseViewSet(OwnedModelViewSet):
     Исключение из общего правила изоляции: глобальные упражнения
     (owner=NULL) видны всем, но редактировать можно только свои.
     """
+
+    permission_classes = [IsOwnerOrGlobalReadOnly, TokenScopePermission]
 
     serializer_class = s.ExerciseSerializer
     queryset = m.Exercise.objects.select_related("equipment").prefetch_related(
@@ -138,6 +141,8 @@ class ExerciseViewSet(OwnedModelViewSet):
 
 class ExerciseAlternativeViewSet(OwnedModelViewSet):
     """Список альтернатив на случай «тренажёр занят»."""
+
+    permission_classes = [IsOwnerOrGlobalReadOnly, TokenScopePermission]
 
     serializer_class = s.ExerciseAlternativeSerializer
     queryset = m.ExerciseAlternative.objects.all()
@@ -399,6 +404,7 @@ class SessionExerciseViewSet(OwnedModelViewSet):
         entry.save(update_fields=["status", "updated_at"])
         for set_log in created:
             apply_set_effects(set_log)
+        entry = self.get_queryset().get(pk=entry.pk)
         return Response(self.get_serializer(entry).data, status=status.HTTP_201_CREATED)
 
 

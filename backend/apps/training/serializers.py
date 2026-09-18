@@ -116,10 +116,10 @@ class WorkoutTemplateSerializer(OwnedModelSerializer):
             "blocks", "schedules", "estimated_minutes", "over_limit",
         ]
 
-    def get_estimated_minutes(self, obj):
+    def get_estimated_minutes(self, obj) -> int:
         return obj.estimated_minutes()
 
-    def get_over_limit(self, obj):
+    def get_over_limit(self, obj) -> bool:
         """Мягкое предупреждение: прикидка длительности против лимита."""
         if not obj.duration_limit_minutes:
             return False
@@ -147,10 +147,10 @@ class SetLogSerializer(OwnedModelSerializer):
         ]
         read_only_fields = ["tonnage", "duration_label"]
 
-    def get_tonnage(self, obj):
+    def get_tonnage(self, obj) -> float:
         return obj.tonnage()
 
-    def get_duration_label(self, obj):
+    def get_duration_label(self, obj) -> str | None:
         """85 → «1:25». Хранится всё равно целым числом секунд."""
         from apps.core.units import seconds_to_label
 
@@ -208,7 +208,7 @@ class WorkoutSessionSerializer(OwnedModelSerializer):
         ]
         read_only_fields = ["tonnage_kg", "working_sets_count", "duration_seconds"]
 
-    def get_completion(self, obj):
+    def get_completion(self, obj) -> dict:
         from .services import session_completion
 
         return session_completion(obj)

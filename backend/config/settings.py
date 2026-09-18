@@ -128,6 +128,9 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.DefaultPagination",
     "PAGE_SIZE": 50,
+    # Параметр ?format= у нас означает формат выгрузки (json/csv/markdown),
+    # а не выбор рендерера DRF — иначе /api/context/?format=markdown даёт 404.
+    "URL_FORMAT_OVERRIDE": None,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
     if not DEBUG

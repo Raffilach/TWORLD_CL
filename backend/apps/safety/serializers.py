@@ -75,7 +75,7 @@ class RecurrenceNoticeSerializer(OwnedModelSerializer):
             "days_between", "acknowledged_at", "message",
         ]
 
-    def get_message(self, obj):
+    def get_message(self, obj) -> str:
         return (
             f"Это второй эпизод в зоне «{obj.body_part.name_ru}» за {obj.days_between} дней. "
             "Повторяющаяся травма в одном месте — повод показаться врачу, "

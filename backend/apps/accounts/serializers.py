@@ -28,7 +28,7 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         exclude = ["id", "user", "diary_pin_hash"]
         read_only_fields = ["created_at", "updated_at"]
 
-    def get_leave_gym_by(self, obj):
+    def get_leave_gym_by(self, obj) -> str:
         """Во сколько выйти из зала, чтобы лечь вовремя."""
         return obj.leave_gym_by().strftime("%H:%M")
 
@@ -137,7 +137,7 @@ class ShareLinkSerializer(serializers.ModelSerializer):
                   "expires_at", "revoked_at", "view_count", "url", "is_active"]
         read_only_fields = ["slug", "view_count", "revoked_at"]
 
-    def get_url(self, obj):
+    def get_url(self, obj) -> str:
         request = self.context.get("request")
         path = f"/s/{obj.slug}"
         return request.build_absolute_uri(path) if request else path

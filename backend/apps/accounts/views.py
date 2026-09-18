@@ -11,6 +11,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from drf_spectacular.types import OpenApiTypes
 from rest_framework.views import APIView
 
 from apps.core.viewsets import OwnedModelViewSet, SingletonOwnedView
@@ -101,10 +102,13 @@ def _username_taken(candidate: str) -> bool:
     return User.objects.annotate(u=Lower("username")).filter(u=candidate.lower()).exists()
 
 
+@extend_schema(responses=UserSerializer)  # schema: MeView
 class MeView(APIView):
+    @extend_schema(responses=UserSerializer)
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
+    @extend_schema(request=UserSerializer, responses=UserSerializer)
     def patch(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

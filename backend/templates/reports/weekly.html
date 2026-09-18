@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Отчёт за неделю {{ data.period.from }} — {{ data.period.to }}</title>
+<style>
+  /* Печать на A4. Никаких цветов: отчёт должен читаться в ч/б. */
+  @page { size: A4; margin: 14mm 12mm; @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #666; } }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Sans", "Liberation Sans", sans-serif; font-size: 9.5pt; line-height: 1.4; color: #111; margin: 0; }
+  h1 { font-size: 16pt; margin: 0 0 2mm; }
+  h2 { font-size: 11pt; margin: 6mm 0 2mm; border-bottom: 1px solid #111; padding-bottom: 1mm; }
+  h3 { font-size: 10pt; margin: 4mm 0 1mm; }
+  .muted { color: #555; }
+  .header { border-bottom: 2px solid #111; padding-bottom: 3mm; margin-bottom: 4mm; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-end; }
+  .headline { font-size: 30pt; font-weight: 700; line-height: 1; }
+  .headline-label { font-size: 9pt; text-transform: uppercase; letter-spacing: .05em; }
+  .verdict { margin-top: 2mm; font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0; }
+  th, td { border: 1px solid #999; padding: 1.2mm 2mm; text-align: left; vertical-align: top; }
+  th { background: #eee; font-weight: 600; }
+  td.num, th.num { text-align: right; }
+  .summary td.delta-up::before { content: "▲ "; }
+  .summary td.delta-down::before { content: "▼ "; }
+  .workout { border: 1px solid #999; padding: 2mm; margin-bottom: 3mm; page-break-inside: avoid; }
+  .workout-head { font-weight: 600; border-bottom: 1px dashed #999; padding-bottom: 1mm; margin-bottom: 1mm; }
+  .sets { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; }
+  .warmup { color: #666; }
+  .chart { height: 18mm; border-left: 1px solid #999; border-bottom: 1px solid #999; position: relative; margin: 1mm 0 3mm; }
+  .bar { position: absolute; bottom: 0; background: #444; width: 2.5mm; }
+  .focus { border: 2px solid #111; padding: 3mm; margin-top: 3mm; page-break-inside: avoid; }
+  .focus-title { font-weight: 700; text-transform: uppercase; font-size: 8.5pt; letter-spacing: .05em; }
+  ul { margin: 1mm 0 1mm 4mm; padding: 0; }
+  .note { font-style: italic; color: #444; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>Неделя {{ data.period.iso_week }} · {{ data.period.from|date:"d.m.Y" }} — {{ data.period.to|date:"d.m.Y" }}</h1>
+      <div class="muted">
+        Закрыто дней: {{ closed_days }} из 7 · выгружено {{ data.generated_at|date:"d.m.Y H:i" }}
+        {% if variant == "coach" %}· подробная версия{% else %}· короткая версия{% endif %}
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="headline">{{ data.headline.value }}</div>
+      <div class="headline-label">{{ data.headline.label }}</div>
+    </div>
+  </div>
+  <div class="verdict">{{ data.verdict }}</div>
+  {% if data.headline.hint %}<div class="muted note">{{ data.headline.hint }}</div>{% endif %}
+</div>
+
+{% if blocks.summary %}
+<h2>Сводка</h2>
+<table class="summary">
+  <tr><th>Метрика</th><th class="num">Факт</th><th class="num">Цель</th><th class="num">К прошлой неделе</th></tr>
+  <tr>
+    <td>Тренд-вес</td>
+    <td class="num">{{ data.metrics.weight.trend_end_kg|floatformat:1|default:"—" }} кг</td>
+    <td class="num">{{ goal_weight|default:"—" }}</td>
+    <td class="num">{{ data.metrics.weight.change_kg|default:"—" }}</td>
+  </tr>
+  <tr>
+    <td>Тренировок</td>
+    <td class="num">{{ data.metrics.workouts.count }}</td>
+    <td class="num">—</td>
+    <td class="num">{{ data.previous.workouts.count }}</td>
+  </tr>
+  <tr>
+    <td>Тоннаж</td>
+    <td class="num">{{ data.metrics.workouts.tonnage_kg|floatformat:0 }} кг</td>
+    <td class="num">—</td>
+    <td class="num">{{ data.previous.workouts.tonnage_kg|floatformat:0 }} кг</td>
+  </tr>
+  <tr>
+    <td>Средняя длительность</td>
+    <td class="num">{{ avg_duration }}</td>
+    <td class="num">—</td>
+    <td class="num">{{ prev_avg_duration }}</td>
+  </tr>
+  <tr>
+    <td>Средний сон</td>
+    <td class="num">{{ sleep_avg }}</td>
+    <td class="num">{{ sleep_target }}</td>
+    <td class="num">{{ prev_sleep_avg }}</td>
+  </tr>
+  <tr>
+    <td>Попадания в целевой отбой</td>
+    <td class="num">{{ data.metrics.sleep.bedtime.hits }} из {{ data.metrics.sleep.bedtime.nights }}</td>
+    <td class="num">7</td>
+    <td class="num">{{ data.previous.sleep.bedtime.hits }}</td>
+  </tr>
+  <tr>
+    <td>Белок в норме</td>
+    <td class="num">{{ data.metrics.protein.days_on_target }} из {{ data.metrics.protein.days_logged }} дн.</td>
+    <td class="num">{{ data.metrics.protein.target_g }} г</td>
+    <td class="num">{{ data.previous.protein.days_on_target }}</td>
+  </tr>
+  <tr>
+    <td>Дисциплина</td>
+    <td class="num">{{ data.metrics.discipline.discipline_percent|default:"—" }}%</td>
+    <td class="num">—</td>
+    <td class="num">{{ data.previous.discipline.discipline_percent|default:"—" }}%</td>
+  </tr>
+</table>
+{% if data.habits %}
+<h3>Серии привычек</h3>
+<table>
+  <tr><th>Привычка</th><th class="num">Текущая серия</th><th class="num">Дней с решения</th><th class="num">Чистых дней</th></tr>
+  {% for habit in data.habits %}
+  <tr><td>{{ habit.name }}</td><td class="num">{{ habit.current_streak }}</td>
+      <td class="num">{{ habit.days_since_decision }}</td><td class="num">{{ habit.total_clean_days }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+
+{% if blocks.days_table %}
+<h2>По дням</h2>
+<table>
+  <tr><th>День</th><th>Дата</th><th>Тренировка</th><th class="num">Тоннаж</th></tr>
+  {% for day in data.days %}
+  <tr><td>{{ day.weekday }}</td><td>{{ day.date|date:"d.m" }}</td>
+      <td>{{ day.workout|default:"—" }}</td>
+      <td class="num">{% if day.tonnage_kg %}{{ day.tonnage_kg|floatformat:0 }} кг{% else %}—{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if blocks.workouts and data.workouts %}
+<h2>Тренировки</h2>
+{% for workout in data.workouts %}
+<div class="workout">
+  <div class="workout-head">
+    {{ workout.date|date:"d.m" }} · {{ workout.template }}{% if workout.gym %} · {{ workout.gym }}{% endif %}
+    · {{ workout.duration_label }} · тоннаж {{ workout.tonnage_kg|floatformat:0 }} кг
+    · самочувствие {{ workout.wellbeing|default:"—" }}/10
+    {% if workout.while_injured %} · тренировка на больном{% endif %}
+  </div>
+  {% for exercise in workout.exercises %}
+    <div class="sets">
+      <strong>{{ exercise.name }}</strong>
+      {% if exercise.status == "done" %}
+        — {% for set in exercise.sets %}<span class="{% if set.warmup %}warmup{% endif %}">{{ set.label }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}
+      {% else %}
+        — {{ exercise.status_label }}{% if exercise.fail_reason %} ({{ exercise.fail_reason }}){% endif %}
+      {% endif %}
+    </div>
+    {% if exercise.note %}<div class="note">{{ exercise.note }}</div>{% endif %}
+  {% endfor %}
+  {% if workout.note %}<div class="note">Заметка: {{ workout.note }}</div>{% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{% if blocks.skipped and data.skipped %}
+<h2>Пропущенные упражнения</h2>
+<table>
+  <tr><th>Дата</th><th>Упражнение</th><th>Что было</th><th>Учтено в дисциплине</th></tr>
+  {% for item in data.skipped %}
+  <tr><td>{{ item.date|date:"d.m" }}</td><td>{{ item.exercise }}</td>
+      <td>{{ item.reason|default:"осознанный пропуск" }}</td>
+      <td>{% if item.counts %}да{% else %}нет — внешняя причина{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if blocks.records and data.records %}
+<h2>Новые личные рекорды</h2>
+<table>
+  <tr><th>Упражнение</th><th>Тип</th><th class="num">Значение</th><th>Дата</th></tr>
+  {% for record in data.records %}
+  <tr><td>{{ record.exercise }}</td><td>{{ record.kind }}</td>
+      <td class="num">{{ record.value|floatformat:1 }}</td><td>{{ record.date|date:"d.m" }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if blocks.exercise_charts and charts %}
+<h2>Ключевые упражнения</h2>
+{% for chart in charts %}
+<h3>{{ chart.name }}</h3>
+<div class="chart">
+  {% for bar in chart.bars %}
+  <div class="bar" style="left: {{ bar.left }}mm; height: {{ bar.height }}mm;"></div>
+  {% endfor %}
+</div>
+<div class="muted">{{ chart.caption }}</div>
+{% endfor %}
+{% endif %}
+
+{% if blocks.pain_log and data.pain_log %}
+<h2>Журнал боли</h2>
+<table>
+  <tr><th>Дата</th><th>Зона</th><th class="num">Интенсивность</th><th>Заметка</th></tr>
+  {% for item in data.pain_log %}
+  <tr><td>{{ item.date|date:"d.m" }}</td><td>{{ item.body_part }}</td>
+      <td class="num">{{ item.severity }}/10</td><td>{{ item.note }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if blocks.nutrition_exceptions and data.exceptions %}
+<h2>Исключения по питанию</h2>
+<table>
+  <tr><th>Когда</th><th>Что</th><th>Комментарий</th></tr>
+  {% for item in data.exceptions %}
+  <tr><td>{{ item.at|date:"d.m H:i" }}</td><td>{{ item.kind }}</td><td>{{ item.note }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>Выводы</h2>
+{% if data.what_worked %}
+<h3>Что сработало</h3>
+<ul>{% for item in data.what_worked %}<li>{{ item }}</li>{% endfor %}</ul>
+{% endif %}
+
+<div class="focus">
+  <div class="focus-title">Слабое звено недели</div>
+  <div><strong>{{ data.weak_link.title }}</strong> — {{ data.weak_link.detail }}</div>
+  <div class="focus-title" style="margin-top:2mm">Один фокус на следующую неделю</div>
+  <div>{{ data.weak_link.focus }}</div>
+</div>
+
+{% if data.volume.imbalance_warning %}
+<p class="note">{{ data.volume.imbalance_warning }}</p>
+{% endif %}
+
+{% if data.events %}
+<h3>События недели</h3>
+<ul>{% for event in data.events %}<li>{{ event.date|date:"d.m" }} — {{ event.title }} ({{ event.kind }})</li>{% endfor %}</ul>
+{% endif %}
+
+<p class="muted" style="margin-top:6mm; font-size:8pt">
+  Пропущенный день — это данные, а не провал. Один плохой день ничего не значит:
+  все выводы в этом отчёте построены на недельных величинах.
+</p>
+
+</body>
+</html>

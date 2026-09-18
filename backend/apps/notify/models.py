@@ -1,4 +1,6 @@
 """Уведомления: не больше двух в день, все формулировки нейтральные."""
+from datetime import time
+
 from django.db import models
 
 from apps.core.models import OwnedModel
@@ -14,15 +16,15 @@ class NotificationSettings(models.Model):
     push_enabled = models.BooleanField(default=False)
 
     morning_weigh_in_enabled = models.BooleanField(default=True)
-    morning_weigh_in_time = models.TimeField(default="08:30")
+    morning_weigh_in_time = models.TimeField(default=time(8, 30))
 
     bedtime_reminder_enabled = models.BooleanField(default=True)
     bedtime_reminder_minutes_before = models.PositiveSmallIntegerField(default=30)
 
     habit_risk_reminder_enabled = models.BooleanField(default=False)
 
-    quiet_hours_from = models.TimeField(default="23:00")
-    quiet_hours_to = models.TimeField(default="08:00")
+    quiet_hours_from = models.TimeField(default=time(23, 0))
+    quiet_hours_to = models.TimeField(default=time(8, 0))
 
     def __str__(self):
         return f"уведомления {self.user.username}"

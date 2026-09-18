@@ -1,5 +1,6 @@
 import secrets
 import uuid
+from datetime import time
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
@@ -185,8 +186,8 @@ class UserSettings(TimeStampedModel):
     free_meal_weekday = models.PositiveSmallIntegerField(null=True, blank=True)
 
     # сон и вечер
-    bedtime_goal = models.TimeField(default="23:30")
-    wake_goal = models.TimeField(default="07:00")
+    bedtime_goal = models.TimeField(default=time(23, 30))
+    wake_goal = models.TimeField(default=time(7, 0))
     sleep_target_minutes = models.PositiveIntegerField(default=480)
     commute_home_minutes = models.PositiveIntegerField(default=60)
     wind_down_minutes = models.PositiveIntegerField(default=60)
@@ -223,7 +224,12 @@ class UserSettings(TimeStampedModel):
         """Во сколько выйти из зала, чтобы лечь вовремя (раздел 6)."""
         from datetime import datetime, timedelta
 
-        base = datetime.combine(timezone.now().date(), self.bedtime_goal)
+        goal = self.bedtime_goal
+        if isinstance(goal, str):
+            from django.utils.dateparse import parse_time
+
+            goal = parse_time(goal)
+        base = datetime.combine(timezone.now().date(), goal)
         return (base - timedelta(minutes=self.commute_home_minutes + self.wind_down_minutes)).time()
 
 
