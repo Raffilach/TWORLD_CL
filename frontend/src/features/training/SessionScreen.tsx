@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../shared/api/client";
 import type { BlockPriority, SessionExercise, WorkoutSession } from "../../shared/api/types";
 import { haptic } from "../../shared/hooks/useHaptics";
+import { useSyncStatus } from "../../shared/hooks/useOnline";
 import { useUndo } from "../../shared/hooks/useUndo";
 import { Button, Loading, Notice, Scale, StatusDot } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
@@ -33,6 +34,7 @@ export function SessionScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const undo = useUndo();
+  const { online, pending } = useSyncStatus();
   const [openExercise, setOpenExercise] = useState<number | null>(null);
   const [rest, setRest] = useState<RestState | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -94,6 +96,16 @@ export function SessionScreen() {
           <div className="grow">
             <strong>{session.template_name ?? "Тренировка"}</strong>{" "}
             <SessionClock startedAt={session.started_at} />
+            <br />
+            {/* Статус нужен именно здесь: в зале связи может не быть,
+                и человек должен видеть, что подходы не потерялись. */}
+            <span className="sync-status">
+              {!online
+                ? `Оффлайн · ${pending} в очереди`
+                : pending > 0
+                  ? `${pending} ждут отправки`
+                  : "Синхронизировано"}
+            </span>
           </div>
           <Button onClick={() => setFinishing(true)}>Завершить</Button>
         </header>

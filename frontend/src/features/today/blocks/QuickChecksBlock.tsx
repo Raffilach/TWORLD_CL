@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { api } from "../../../shared/api/client";
+import { submitOrQueue } from "../../../shared/offline/submit";
 import { useList } from "../../../shared/api/hooks";
 import type { TodayPayload } from "../../../shared/api/types";
 import { haptic } from "../../../shared/hooks/useHaptics";
@@ -40,6 +41,15 @@ export function QuickChecksBlock({
 
   const addGlass = async () => {
     haptic("tap");
+    if (!navigator.onLine) {
+      // Без сети пишем напрямую в очередь: стакан воды не повод ждать связи.
+      await submitOrQueue("water_log", "/nutrition/water/", {
+        at: new Date().toISOString(),
+        volume_ml: data.water_glass_ml,
+      });
+      undo.notify("+1 стакан записан без сети");
+      return;
+    }
     const response = await api.post<{ entry: { id: number } }>("/nutrition/water/glass/", {});
     onChanged();
     undo.push("+1 стакан", async () => {

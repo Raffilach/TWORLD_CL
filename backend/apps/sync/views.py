@@ -122,8 +122,15 @@ class SyncPushView(APIView):
                             client_id=client_id, op="upsert", result=result,
                         )
                         return {"op_id": op_id, **result}
+                    relations = {
+                        field.name for field in model._meta.fields if field.is_relation
+                    }
                     for key, value in payload.items():
-                        if hasattr(instance, key):
+                        # Связи приходят идентификаторами: клиент не знает
+                        # объектов, он знает их id.
+                        if key in relations:
+                            setattr(instance, f"{key}_id", value)
+                        elif hasattr(instance, key):
                             setattr(instance, key, value)
                     instance.client_updated_at = client_updated_at
                     instance.full_clean(exclude=["user"], validate_unique=False)

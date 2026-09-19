@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { api } from "../../../shared/api/client";
+import { submitOrQueue } from "../../../shared/offline/submit";
 import type { TodayPayload } from "../../../shared/api/types";
 import { haptic } from "../../../shared/hooks/useHaptics";
 import { useUndo } from "../../../shared/hooks/useUndo";
@@ -39,20 +40,29 @@ export function WeightBlock({
     const weight = Number(value);
     if (!Number.isFinite(weight) || weight <= 0) return;
     haptic("success");
-    const created = await api.post<{
+    const result = await submitOrQueue<{
       id: number;
       fast_loss_warning: { message: string } | null;
       comparability_note: string | null;
-    }>("/body/weight/", {
+    }>("weight_entry", "/body/weight/", {
       at: new Date().toISOString(),
       weight_kg: weight.toFixed(2),
       conditions,
     });
-    setWarning(created.fast_loss_warning?.message ?? null);
-    setNote(created.comparability_note ?? null);
+
+    if (result.queued) {
+      setNote(null);
+      setWarning(null);
+      undo.notify(`${weight} кг записано без сети — отправим, когда появится`);
+      return;
+    }
+
+    setWarning(result.data?.fast_loss_warning?.message ?? null);
+    setNote(result.data?.comparability_note ?? null);
     onChanged();
+    const createdId = result.data?.id;
     undo.push(`Записано ${weight} кг`, async () => {
-      await api.delete(`/body/weight/${created.id}/`);
+      if (createdId) await api.delete(`/body/weight/${createdId}/`);
       onChanged();
     });
   };

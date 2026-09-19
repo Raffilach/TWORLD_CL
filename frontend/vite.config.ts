@@ -58,6 +58,16 @@ export default defineConfig(({ mode }) => {
         devOptions: { enabled: false },
       }),
     ],
+    // Те же правила для `vite preview`: собранное приложение должно
+    // проверяться с работающим Service Worker и живым API.
+    preview: {
+      port: 4173,
+      proxy: {
+        "/api": { target: proxyTarget, changeOrigin: true },
+        "/media": { target: proxyTarget, changeOrigin: true },
+        "^/s/[A-Za-z0-9_-]+$": { target: proxyTarget, changeOrigin: true },
+      },
+    },
     server: {
       port: 5173,
       proxy: {

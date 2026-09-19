@@ -1,4 +1,5 @@
 import { api } from "../../../shared/api/client";
+import { submitOrQueue } from "../../../shared/offline/submit";
 import type { TodayPayload } from "../../../shared/api/types";
 import { haptic } from "../../../shared/hooks/useHaptics";
 import { Card, Scale } from "../../../shared/ui/primitives";
@@ -13,6 +14,13 @@ export function MoodBlock({
 }) {
   const set = async (patch: Record<string, number>) => {
     haptic("tap");
+    if (!navigator.onLine) {
+      await submitOrQueue("daily_log", "/journal/daily/", {
+        date: new Date().toISOString().slice(0, 10),
+        ...patch,
+      });
+      return;
+    }
     await api.post("/journal/daily/set/", patch);
     onChanged();
   };

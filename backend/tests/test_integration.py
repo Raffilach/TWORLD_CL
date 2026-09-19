@@ -339,3 +339,37 @@ def test_repeat_last_copies_all_sets(auth_api):
     assert response.status_code == 201
     assert len(response.json()["sets"]) == 3
     assert response.json()["status"] == "done"
+
+
+@pytest.mark.django_db
+def test_sync_accepts_related_ids(auth_api):
+    """Клиент присылает связи идентификаторами — подход из зала без сети."""
+    from apps.training.models import Exercise, SessionExercise, SetLog, WorkoutSession
+
+    client, user = auth_api("syncer_six")
+    exercise = Exercise.objects.create(owner=user, name="Жим лёжа")
+    session = WorkoutSession.objects.create(
+        user=user, date=timezone.localdate(), status="in_progress")
+    entry = SessionExercise.objects.create(user=user, session=session, exercise=exercise)
+
+    response = client.post("/api/sync/push/", {"operations": [{
+        "op_id": str(uuid.uuid4()),
+        "entity": "set_log",
+        "client_id": str(uuid.uuid4()),
+        "op": "upsert",
+        "client_updated_at": timezone.now().isoformat(),
+        "payload": {
+            "session_exercise": entry.id,
+            "set_number": 1,
+            "is_warmup": False,
+            "weight_kg": "62.50",
+            "reps": 10,
+            "completed_at": timezone.now().isoformat(),
+        },
+    }]}, format="json")
+
+    result = response.json()["results"][0]
+    assert result["status"] == "applied", result
+    saved = SetLog.objects.get(user=user, session_exercise=entry)
+    assert saved.reps == 10
+    assert str(saved.weight_kg) == "62.50"

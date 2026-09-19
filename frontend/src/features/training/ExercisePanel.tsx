@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { api } from "../../shared/api/client";
+import { submitOrQueue } from "../../shared/offline/submit";
 import { useList } from "../../shared/api/hooks";
 import type { SessionExercise, SetLog, WorkoutSession } from "../../shared/api/types";
 import { haptic } from "../../shared/hooks/useHaptics";
@@ -61,6 +62,8 @@ export function ExercisePanel({
   const [isWarmup, setIsWarmup] = useState(false);
   const [rir, setRir] = useState<number | null>(null);
   const [manualSeconds, setManualSeconds] = useState("");
+  // Подходы, записанные без сети: показываем их сразу, отправятся позже.
+  const [pendingSets, setPendingSets] = useState<Partial<SetLog>[]>([]);
 
   const { data: prefill } = useQuery({
     queryKey: ["prefill", entry.exercise, session.gym],
@@ -85,23 +88,46 @@ export function ExercisePanel({
 
   const isTimed = entry.load_type === "time";
   const workingSets = entry.sets.filter((set) => !set.is_warmup);
+  const allSets = [...entry.sets, ...pendingSets];
 
   const recordSet = async (payload: Partial<SetLog>) => {
     haptic("success");
-    const created = await api.post<SetLog & { warnings?: { message: string }[] }>("/sets/", {
+    const body = {
       session_exercise: entry.id,
-      set_number: entry.sets.length + 1,
+      set_number: entry.sets.length + pendingSets.length + 1,
       is_warmup: isWarmup,
       rir,
+      completed_at: new Date().toISOString(),
       ...payload,
-    });
-    setWarning(created.warnings?.[0]?.message ?? null);
+    };
+
+    const result = await submitOrQueue<SetLog & { warnings?: { message: string }[] }>(
+      "set_log",
+      "/sets/",
+      body,
+    );
+
     setRir(null);
-    onChanged();
     // Таймер отдыха стартует сам — руками его никто не запускает.
     if (!isWarmup) onRest(prefillRest(entry, session));
+
+    if (result.queued) {
+      setPendingSets((current) => [...current, { ...body, client_id: result.clientId }]);
+      setWarning(null);
+      onUndo("Записано без сети — отправим, когда появится", () =>
+        setPendingSets((current) =>
+          current.filter((item) => item.client_id !== result.clientId),
+        ),
+      );
+      return;
+    }
+
+    setWarning(result.data?.warnings?.[0]?.message ?? null);
+    setPendingSets([]);
+    onChanged();
+    const createdId = result.data?.id;
     onUndo("Подход записан", async () => {
-      await api.delete(`/sets/${created.id}/`);
+      if (createdId) await api.delete(`/sets/${createdId}/`);
       onChanged();
     });
   };
@@ -177,11 +203,11 @@ export function ExercisePanel({
             </Notice>
           ))}
 
-          {entry.sets.length > 0 && (
+          {allSets.length > 0 && (
             <ul className="list">
-              {entry.sets.map((set) => (
-                <li key={set.id}>
-                  <SwipeRow onDelete={() => void deleteSet(set.id)}>
+              {allSets.map((set) => (
+                <li key={set.id ?? set.client_id}>
+                  <SwipeRow onDelete={() => set.id && void deleteSet(set.id)}>
                     <div className={`set-row ${set.is_warmup ? "set-row--warmup" : ""}`}>
                       <span className="tiny">{set.is_warmup ? "разм." : `#${set.set_number}`}</span>
                       <span className="mono">
@@ -190,14 +216,20 @@ export function ExercisePanel({
                           : `${Number(set.weight_kg ?? 0)}${set.weight_is_per_side ? "/стор." : ""} × ${set.reps ?? 0}`}
                         {set.rir !== null && <span className="tiny"> RIR {set.rir}</span>}
                       </span>
-                      <button
-                        type="button"
-                        className="btn btn--ghost btn--square"
-                        aria-label="Удалить подход"
-                        onClick={() => void deleteSet(set.id)}
-                      >
-                        ×
-                      </button>
+                      {set.id ? (
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--square"
+                          aria-label="Удалить подход"
+                          onClick={() => void deleteSet(set.id!)}
+                        >
+                          ×
+                        </button>
+                      ) : (
+                        <span className="tiny" title="Ждёт сети">
+                          ⋯
+                        </span>
+                      )}
                     </div>
                   </SwipeRow>
                 </li>
