@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "../../shared/api/client";
 import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
 import { InjurySheet } from "../safety/InjurySheet";
+import { ReturnTestSheet } from "../safety/ReturnTestSheet";
 import { WeightLimitSheet } from "../safety/WeightLimitSheet";
 
 interface SafetyOverview {
@@ -22,6 +23,7 @@ interface SafetyOverview {
 export function SafetyTab() {
   const [injuryOpen, setInjuryOpen] = useState(false);
   const [limitOpen, setLimitOpen] = useState(false);
+  const [testFor, setTestFor] = useState<number | null>(null);
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["safety"],
     queryFn: () => api.get<SafetyOverview>("/safety/"),
@@ -57,6 +59,13 @@ export function SafetyTab() {
                   </span>
                   {injury.notes && <span className="tiny"><br />{injury.notes}</span>}
                 </span>
+                <button
+                  type="button"
+                  className="chip chip--sm"
+                  onClick={() => setTestFor(injury.id)}
+                >
+                  тест возврата
+                </button>
               </li>
             ))}
           </ul>
@@ -91,6 +100,12 @@ export function SafetyTab() {
       <InjurySheet
         open={injuryOpen}
         onClose={() => setInjuryOpen(false)}
+        onSaved={() => void refetch()}
+      />
+      <ReturnTestSheet
+        open={testFor !== null}
+        injuryId={testFor}
+        onClose={() => setTestFor(null)}
         onSaved={() => void refetch()}
       />
       <WeightLimitSheet

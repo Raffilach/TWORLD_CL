@@ -6,6 +6,7 @@ import { useList } from "../../shared/api/hooks";
 import { WeightTrendChart } from "../../shared/ui/charts";
 import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
 import { MeasurementSheet } from "../body/MeasurementSheet";
+import { PhotoCompare } from "../body/PhotoCompare";
 import { PhotoSheet } from "../body/PhotoSheet";
 import { ScanSheet } from "../body/ScanSheet";
 
@@ -193,6 +194,8 @@ export function BodyTab() {
         </p>
         <Button onClick={() => setSheet("photo")}>Сделать снимок</Button>
       </Card>
+
+      <PhotoCompare />
 
       <MeasurementSheet
         open={sheet === "measure"}

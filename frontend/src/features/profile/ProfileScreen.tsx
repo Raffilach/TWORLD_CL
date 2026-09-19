@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useAuth } from "../../app/auth";
 import { api, ApiError } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
-import { Avatar } from "./Avatar";
 import { NotificationSettings } from "./NotificationSettings";
+import { PersonalCard } from "./PersonalCard";
 import { Button, Card, Chip, Empty, Notice } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 
@@ -83,15 +83,7 @@ export function ProfileScreen() {
 
   return (
     <>
-      <Card>
-        <div className="row" style={{ gap: "var(--space-4)" }}>
-          <Avatar user={user} size={64} />
-          <div className="grow">
-            <p className="big-number">{user.display_name}</p>
-            <p className="muted">{user.handle}</p>
-          </div>
-        </div>
-      </Card>
+      <PersonalCard />
 
       <Card title="Цели и питание">
         <label className="field">

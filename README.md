@@ -72,6 +72,7 @@ cd frontend && npm run typecheck && npm run build
 cd frontend && npm run e2e                 # сквозной прогон в Chromium под iPhone 14 Pro
 cd frontend && npm run e2e:workout         # запись подхода, таймер отдыха, шаг по сетке зала
 cd frontend && npm run e2e:screens         # все девять вкладок «Прогресса»
+cd frontend && npm run e2e:flows           # создание программы и запись травмы по карте тела
 ```
 
 ---

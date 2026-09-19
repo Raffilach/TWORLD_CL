@@ -6,6 +6,7 @@ import { useList } from "../../shared/api/hooks";
 import { Button, Card, Chip, Empty, Loading, Notice } from "../../shared/ui/primitives";
 import { SimpleLineChart } from "../../shared/ui/charts";
 import { BarcodeScanner } from "../nutrition/BarcodeScanner";
+import { MealsCard } from "../nutrition/MealsCard";
 
 interface WeeklyExceptions {
   period: { from: string; to: string };
@@ -149,6 +150,8 @@ export function NutritionTab() {
           <Empty>Пока не планировался.</Empty>
         )}
       </Card>
+
+      <MealsCard />
 
       <Card title="Продукты">
         <Button onClick={() => setScannerOpen(true)}>Сканировать штрихкод</Button>

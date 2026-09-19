@@ -6,6 +6,7 @@ import { useList } from "../../shared/api/hooks";
 import { Button, Card, Chip, Empty, Notice } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 import { PinGate } from "./PinGate";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 interface JournalEntry {
   id: number;
@@ -57,6 +58,7 @@ export function JournalTab() {
   const [eventTitle, setEventTitle] = useState("");
   const [eventKind, setEventKind] = useState("other");
   const [saved, setSaved] = useState(false);
+  const [lastEntryId, setLastEntryId] = useState<number | null>(null);
 
   const entries = useList<JournalEntry>(["journal"], "/journal/entries/", { page_size: 30 }, unlocked);
   const events = useList<LifeEvent>(["life-events"], "/journal/events/", undefined, unlocked);
@@ -67,12 +69,13 @@ export function JournalTab() {
     const filled = Object.entries(answers).filter(([, value]) => value.trim());
     if (!text.trim() && filled.length === 0) return;
     const now = new Date();
-    await api.post("/journal/entries/", {
+    const created = await api.post<{ id: number }>("/journal/entries/", {
       date: now.toISOString().slice(0, 10),
       at: now.toISOString(),
       text,
       answers: filled.map(([question, value]) => ({ question, text: value })),
     });
+    setLastEntryId(created.id);
     setText("");
     setAnswers({});
     setSaved(true);
@@ -120,6 +123,16 @@ export function JournalTab() {
           </Button>
         </div>
         {saved && <p className="tiny" style={{ marginTop: "var(--space-2)" }}>Записано.</p>}
+
+        {lastEntryId !== null && (
+          <div style={{ marginTop: "var(--space-3)" }}>
+            <VoiceRecorder entryId={lastEntryId} onSaved={() => void entries.refetch()} />
+            <p className="tiny">
+              Добавится к последней записи. Расшифровка появится, если она
+              настроена на сервере.
+            </p>
+          </div>
+        )}
       </Card>
 
       <Card

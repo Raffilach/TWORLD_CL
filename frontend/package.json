@@ -10,7 +10,8 @@
     "typecheck": "tsc -b --noEmit",
     "e2e": "node e2e/smoke.mjs",
     "e2e:workout": "node e2e/workout.mjs",
-    "e2e:screens": "node e2e/screens.mjs"
+    "e2e:screens": "node e2e/screens.mjs",
+    "e2e:flows": "node e2e/create-flows.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",

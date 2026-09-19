@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useList } from "../../shared/api/hooks";
 import type { Exercise, Gym, WorkoutSession, WorkoutTemplate } from "../../shared/api/types";
 import { Button, Card, Chip, Empty, Loading } from "../../shared/ui/primitives";
 import { withPlural } from "../../shared/ui/plural";
 import { formatClock } from "../../shared/ui/timers";
+import { CreateTemplateSheet } from "./TemplateEditor";
 
 type Tab = "programs" | "library" | "history" | "gyms";
 
@@ -17,6 +18,8 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function TrainingScreen() {
+  const navigate = useNavigate();
+  const [creating, setCreating] = useState(false);
   const [tab, setTab] = useState<Tab>("programs");
   const [search, setSearch] = useState("");
 
@@ -47,6 +50,11 @@ export function TrainingScreen() {
 
       {tab === "programs" && (
         <>
+          <div className="row" style={{ marginBottom: "var(--space-3)" }}>
+            <Button variant="primary" onClick={() => setCreating(true)}>
+              Новая программа
+            </Button>
+          </div>
           {templates.isLoading && <Loading />}
           {templates.data?.map((template) => (
             <Card key={template.id} title={template.name}>
@@ -71,8 +79,19 @@ export function TrainingScreen() {
             </Card>
           ))}
           {templates.data?.length === 0 && (
-            <Empty>Программ пока нет. Их можно создать здесь или импортировать план от ИИ в профиле.</Empty>
+            <Empty>
+              Программ пока нет. Создай свою или импортируй план от ИИ в профиле.
+            </Empty>
           )}
+
+          <CreateTemplateSheet
+            open={creating}
+            onClose={() => setCreating(false)}
+            onCreated={(template) => {
+              void templates.refetch();
+              navigate(`/training/templates/${template.id}`);
+            }}
+          />
         </>
       )}
 

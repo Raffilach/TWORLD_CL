@@ -14,7 +14,7 @@ interface UsernameCheck {
 
 export function AuthScreen() {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,6 +46,12 @@ export function AuthScreen() {
     setError(null);
     setBusy(true);
     try {
+      if (mode === "reset") {
+        // Ответ одинаков независимо от того, есть такой email или нет.
+        await api.post("/auth/password/reset/", { email: loginValue });
+        setError("Если аккаунт с таким email есть, письмо со ссылкой уже отправлено.");
+        return;
+      }
       if (mode === "login") {
         await login(loginValue, password);
       } else {
@@ -73,7 +79,21 @@ export function AuthScreen() {
       </p>
 
       <form className="stack" onSubmit={submit}>
-        {mode === "login" ? (
+        {mode === "reset" ? (
+          <label className="field">
+            <span className="field__label">Email для восстановления</span>
+            <input
+              type="email"
+              value={loginValue}
+              onChange={(event) => setLoginValue(event.target.value)}
+              autoCapitalize="off"
+              autoCorrect="off"
+              inputMode="email"
+              required
+            />
+            <span className="field__hint">Ссылка действует 30 минут.</span>
+          </label>
+        ) : mode === "login" ? (
           <label className="field">
             <span className="field__label">Ник, email или телефон</span>
             <input
@@ -143,6 +163,7 @@ export function AuthScreen() {
           </>
         )}
 
+        {mode !== "reset" && (
         <label className="field">
           <span className="field__label">Пароль</span>
           <input
@@ -154,22 +175,40 @@ export function AuthScreen() {
             required
           />
         </label>
+        )}
 
         {error && <Notice>{error}</Notice>}
 
         <Button type="submit" variant="primary" size="lg" disabled={busy}>
-          {mode === "login" ? "Войти" : "Создать аккаунт"}
+          {mode === "login" ? "Войти" : mode === "register" ? "Создать аккаунт" : "Прислать ссылку"}
         </Button>
 
         <Button
           variant="ghost"
           onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
+            setMode(mode === "register" ? "login" : "register");
             setError(null);
           }}
         >
-          {mode === "login" ? "Нет аккаунта — зарегистрироваться" : "У меня уже есть аккаунт"}
+          {mode === "register" ? "У меня уже есть аккаунт" : "Нет аккаунта — зарегистрироваться"}
         </Button>
+
+        {mode !== "reset" && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setMode("reset");
+              setError(null);
+            }}
+          >
+            Забыл пароль
+          </Button>
+        )}
+        {mode === "reset" && (
+          <Button variant="ghost" onClick={() => { setMode("login"); setError(null); }}>
+            Вернуться ко входу
+          </Button>
+        )}
       </form>
     </div>
   );

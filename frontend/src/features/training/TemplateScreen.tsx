@@ -4,7 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../../shared/api/client";
 import type { TemplateBlock, WorkoutTemplate } from "../../shared/api/types";
-import { Button, Card, Loading, Notice } from "../../shared/ui/primitives";
+import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { AddExerciseSheet, ExclusionSheet } from "./TemplateEditor";
 
 /**
  * Шаблон тренировки.
@@ -17,6 +18,8 @@ export function TemplateScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [addTo, setAddTo] = useState<TemplateBlock | null>(null);
+  const [excluding, setExcluding] = useState(false);
 
   const { data: template, isLoading, refetch } = useQuery({
     queryKey: ["template", id],
@@ -131,14 +134,45 @@ export function TemplateScreen() {
               </li>
             ))}
           </ul>
+          {block.exercises.length === 0 && <Empty>Пока пусто.</Empty>}
+          <div className="row" style={{ marginTop: "var(--space-2)" }}>
+            <Button onClick={() => setAddTo(block)}>Добавить упражнение</Button>
+          </div>
         </Card>
       ))}
+
+      <Card
+        title="Сегодня не делаем"
+        action={
+          <button type="button" className="card__action" onClick={() => setExcluding(true)}>
+            Добавить
+          </button>
+        }
+      >
+        <p className="tiny">
+          Сознательно исключённые упражнения с причиной — чтобы было видно,
+          что это решение, а не забывчивость.
+        </p>
+      </Card>
 
       <div className="thumb-zone">
         <Button variant="primary" size="lg" onClick={() => void start()}>
           Начать тренировку
         </Button>
       </div>
+
+      <AddExerciseSheet
+        open={addTo !== null}
+        block={addTo}
+        onClose={() => setAddTo(null)}
+        onAdded={() => void refetch()}
+      />
+      <ExclusionSheet
+        open={excluding}
+        templateId={template.id}
+        onClose={() => setExcluding(false)}
+        onSaved={() => void refetch()}
+      />
     </>
   );
 }

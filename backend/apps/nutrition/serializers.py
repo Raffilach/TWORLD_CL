@@ -89,10 +89,11 @@ class MealTemplateItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = m.MealTemplateItem
         fields = ["id", "food_item", "food_name", "quantity", "protein_g"]
+        extra_kwargs = {"quantity": {"required": False}}
 
 
 class MealTemplateSerializer(OwnedModelSerializer):
-    items = MealTemplateItemSerializer(many=True, read_only=True)
+    items = MealTemplateItemSerializer(many=True, required=False)
     total_protein_g = serializers.SerializerMethodField()
 
     class Meta:
@@ -101,6 +102,31 @@ class MealTemplateSerializer(OwnedModelSerializer):
 
     def get_total_protein_g(self, obj) -> float:
         return sum(item.food_item.protein_g * item.quantity for item in obj.items.all())
+
+    def create(self, validated_data):
+        items = validated_data.pop("items", [])
+        template = m.MealTemplate.objects.create(**validated_data)
+        self._sync(template, items)
+        return template
+
+    def update(self, instance, validated_data):
+        items = validated_data.pop("items", None)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        if items is not None:
+            instance.items.all().delete()
+            self._sync(instance, items)
+        return instance
+
+    @staticmethod
+    def _sync(template, items):
+        for item in items:
+            m.MealTemplateItem.objects.create(
+                template=template,
+                food_item=item["food_item"],
+                quantity=item.get("quantity", 1),
+            )
 
 
 class WaterLogSerializer(OwnedModelSerializer):

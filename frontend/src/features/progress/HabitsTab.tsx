@@ -5,6 +5,11 @@ import { api } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
 import type { Habit } from "../../shared/api/types";
 import { Button, Card, Empty, Loading } from "../../shared/ui/primitives";
+import {
+  ChallengesCard,
+  HealthTimelineCard,
+  ReplacementsCard,
+} from "../habits/ChallengesCard";
 import { CravingSheet } from "../habits/CravingSheet";
 import { SosSheet } from "../habits/SosSheet";
 
@@ -127,6 +132,14 @@ export function HabitsTab() {
             ))}
           </div>
         </Card>
+      )}
+
+      <ChallengesCard />
+      <ReplacementsCard habits={habits.data ?? []} />
+      {habits.data?.find((habit) => habit.timeline_kind) && (
+        <HealthTimelineCard
+          habitId={habits.data.find((habit) => habit.timeline_kind)!.id}
+        />
       )}
 
       <CravingSheet
