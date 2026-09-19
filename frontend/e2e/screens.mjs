@@ -5,7 +5,7 @@
 import { chromium } from "playwright";
 
 const EXEC = process.env.CHROMIUM_PATH || undefined;
-const BASE = process.env.APP_URL ?? "http://127.0.0.1:5174";
+const BASE = process.env.APP_URL ?? "http://127.0.0.1:5173";
 const dir = process.env.SHOT_DIR || "./e2e/screenshots";
 const errors = [];
 

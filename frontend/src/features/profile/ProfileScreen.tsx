@@ -3,6 +3,11 @@ import { useState } from "react";
 import { useAuth } from "../../app/auth";
 import { api, ApiError } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
+import {
+  applySurface,
+  applyTheme,
+  getSurface,
+} from "../../shared/ui/appearance";
 import { NotificationSettings } from "./NotificationSettings";
 import { PersonalCard } from "./PersonalCard";
 import { Button, Card, Chip, Empty, Notice } from "../../shared/ui/primitives";
@@ -35,6 +40,7 @@ export function ProfileScreen() {
   const [newToken, setNewToken] = useState<string | null>(null);
   const [planText, setPlanText] = useState("");
   const [planResult, setPlanResult] = useState<string | null>(null);
+  const [surfaceMode, setSurfaceMode] = useState(getSurface);
 
   const tokens = useList<ApiToken>(["tokens"], "/tokens/");
   const links = useList<ShareLink>(["share-links"], "/share-links/");
@@ -188,8 +194,9 @@ export function ProfileScreen() {
         </div>
       </Card>
 
-      <Card title="Тема">
-        <div className="row row--wrap">
+      <Card title="Внешний вид">
+        <span className="field__label">Тема</span>
+        <div className="row row--wrap" style={{ marginTop: "var(--space-2)" }}>
           {(["auto", "light", "dark"] as const).map((theme) => (
             <Chip
               key={theme}
@@ -197,13 +204,36 @@ export function ProfileScreen() {
               pressed={settings.theme === theme}
               onClick={() => {
                 void patchSettings({ theme });
-                document.documentElement.dataset.theme = theme === "auto" ? "" : theme;
+                applyTheme(theme);
               }}
             >
               {theme === "auto" ? "как в системе" : theme === "light" ? "светлая" : "тёмная"}
             </Chip>
           ))}
         </div>
+
+        <span className="field__label" style={{ display: "block", marginTop: "var(--space-4)" }}>
+          Поверхности
+        </span>
+        <div className="row row--wrap" style={{ marginTop: "var(--space-2)" }}>
+          {(["glass", "solid"] as const).map((surface) => (
+            <Chip
+              key={surface}
+              small
+              pressed={surfaceMode === surface}
+              onClick={() => {
+                setSurfaceMode(surface);
+                applySurface(surface);
+              }}
+            >
+              {surface === "glass" ? "стекло" : "плотные"}
+            </Chip>
+          ))}
+        </div>
+        <span className="field__hint" style={{ marginTop: "var(--space-2)", display: "block" }}>
+          Размытие стоит ресурсов. На старом телефоне плотные поверхности
+          заметно экономят батарею, и ничего в интерфейсе не ломается.
+        </span>
       </Card>
 
       <Card title="Интеграции с ИИ">

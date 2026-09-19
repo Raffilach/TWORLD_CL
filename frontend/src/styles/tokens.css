@@ -102,9 +102,11 @@
   --gutter: 1rem;           /* боковое поле экрана */
 
   /* --- Форма -------------------------------------------------------------- */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-capsule: 999px;
   --radius-pill: 999px;
 
   --border-width: 1px;
@@ -232,4 +234,180 @@
   --chart-trend: #f0f0f0;
   --chart-raw: #555555;
   --chart-event: #707070;
+}
+
+/* ==========================================================================
+   LIQUID GLASS
+
+   Стекло — это не «полупрозрачный прямоугольник». Чтобы оно читалось
+   как стекло, нужны четыре слоя одновременно:
+
+     1. размытие фона   backdrop-filter: blur() saturate()
+     2. плёнка          полупрозрачная заливка поверх размытия
+     3. блик на кромке  светлая линия сверху и тень снизу изнутри —
+                        так глаз достраивает кривизну линзы
+     4. тень под слоем  отрыв от фона
+
+   Размывать нечего, если за стеклом ровная заливка, поэтому ниже задан
+   ambient-фон: несколько мягких пятен, которые стекло подхватывает.
+
+   Отключается целиком: `:root[data-surface="solid"]` или системная
+   настройка «уменьшить прозрачность». Вся вёрстка это переживает —
+   поверхности просто становятся плотными.
+   ========================================================================== */
+
+:root {
+  /* --- Размытие ---------------------------------------------------------- */
+  --glass-blur: 18px;
+  --glass-blur-chrome: 28px;   /* таб-бар и шапка: сильнее, они всегда сверху */
+  --glass-blur-sheet: 36px;
+  --glass-saturate: 175%;      /* без подъёма насыщенности стекло выглядит грязным */
+
+  /* --- Плёнка ------------------------------------------------------------- */
+  --glass-film: rgba(255, 255, 255, 0.52);
+  --glass-film-chrome: rgba(255, 255, 255, 0.82);
+  --glass-film-strong: rgba(255, 255, 255, 0.82);
+  --glass-film-subtle: rgba(255, 255, 255, 0.34);
+
+  /* --- Кромка: блик сверху, притенение снизу ------------------------------- */
+  --glass-rim-top: rgba(255, 255, 255, 0.9);
+  --glass-rim-bottom: rgba(16, 20, 34, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-border-strong: rgba(255, 255, 255, 0.72);
+
+  /* --- Отрыв от фона -------------------------------------------------------- */
+  --glass-shadow: 0 6px 24px rgba(20, 26, 46, 0.1);
+  --glass-shadow-raised: 0 12px 40px rgba(20, 26, 46, 0.16);
+  --glass-shadow-chrome: 0 -1px 24px rgba(20, 26, 46, 0.08);
+
+  /* --- Ambient-фон: то, что стекло преломляет -------------------------------- */
+  --ambient-base: #dfe5ef;
+  --ambient-1: rgba(96, 134, 205, 0.62);
+  --ambient-2: rgba(158, 128, 205, 0.5);
+  --ambient-3: rgba(104, 178, 186, 0.46);
+  --ambient-4: rgba(226, 186, 138, 0.44);
+
+  /* Поверхности под стеклом делаются прозрачными: цвет даёт плёнка. */
+  --color-surface: transparent;
+  --color-bg: var(--ambient-base);
+
+  /* Акцент на стекле — плотный, иначе текст на нём не читается. */
+  --color-accent: #1f2430;
+  --color-accent-hover: #2c3342;
+  --color-accent-text: #ffffff;
+
+  /* Текст поверх стекла должен быть контрастнее, чем на плотном фоне:
+     под ним подвижный фон. */
+  --color-text: #141823;
+  --color-text-secondary: #4a5162;
+  --color-text-muted: #6d7488;
+  --color-border: rgba(20, 26, 46, 0.12);
+  --color-border-strong: rgba(20, 26, 46, 0.28);
+  --color-surface-sunken: rgba(20, 26, 46, 0.06);
+  --color-surface-raised: rgba(255, 255, 255, 0.72);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --glass-film: rgba(24, 29, 42, 0.52);
+    --glass-film-chrome: rgba(16, 20, 30, 0.82);
+    --glass-film-strong: rgba(28, 33, 48, 0.82);
+    --glass-film-subtle: rgba(28, 33, 48, 0.32);
+
+    /* В тёмной теме блик слабее: яркая кромка на тёмном выглядит дёшево. */
+    --glass-rim-top: rgba(255, 255, 255, 0.22);
+    --glass-rim-bottom: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-strong: rgba(255, 255, 255, 0.24);
+
+    --glass-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    --glass-shadow-raised: 0 14px 44px rgba(0, 0, 0, 0.6);
+    --glass-shadow-chrome: 0 -1px 24px rgba(0, 0, 0, 0.5);
+
+    --ambient-base: #0b0e15;
+    --ambient-1: rgba(58, 96, 186, 0.55);
+    --ambient-2: rgba(112, 78, 172, 0.46);
+    --ambient-3: rgba(42, 126, 138, 0.4);
+    --ambient-4: rgba(148, 108, 62, 0.32);
+
+    --color-surface: transparent;
+    --color-bg: var(--ambient-base);
+    --color-surface-sunken: rgba(255, 255, 255, 0.07);
+    --color-surface-raised: rgba(255, 255, 255, 0.1);
+
+    --color-accent: #f2f4f8;
+    --color-accent-hover: #ffffff;
+    --color-accent-text: #12151d;
+
+    --color-text: #f2f4f8;
+    --color-text-secondary: #b6bccc;
+    --color-text-muted: #858d9f;
+    --color-border: rgba(255, 255, 255, 0.12);
+    --color-border-strong: rgba(255, 255, 255, 0.26);
+  }
+}
+
+:root[data-theme="dark"] {
+  --glass-film: rgba(24, 29, 42, 0.52);
+  --glass-film-chrome: rgba(16, 20, 30, 0.82);
+  --glass-film-strong: rgba(28, 33, 48, 0.82);
+  --glass-film-subtle: rgba(28, 33, 48, 0.32);
+  --glass-rim-top: rgba(255, 255, 255, 0.22);
+  --glass-rim-bottom: rgba(0, 0, 0, 0.3);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-strong: rgba(255, 255, 255, 0.24);
+  --glass-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --glass-shadow-raised: 0 14px 44px rgba(0, 0, 0, 0.6);
+  --glass-shadow-chrome: 0 -1px 24px rgba(0, 0, 0, 0.5);
+  --ambient-base: #0b0e15;
+  --ambient-1: rgba(58, 96, 186, 0.55);
+  --ambient-2: rgba(112, 78, 172, 0.46);
+  --ambient-3: rgba(42, 126, 138, 0.4);
+  --ambient-4: rgba(148, 108, 62, 0.32);
+  --color-surface: transparent;
+  --color-bg: var(--ambient-base);
+  --color-surface-sunken: rgba(255, 255, 255, 0.07);
+  --color-surface-raised: rgba(255, 255, 255, 0.1);
+  --color-accent: #f2f4f8;
+  --color-accent-hover: #ffffff;
+  --color-accent-text: #12151d;
+  --color-text: #f2f4f8;
+  --color-text-secondary: #b6bccc;
+  --color-text-muted: #858d9f;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-border-strong: rgba(255, 255, 255, 0.26);
+}
+
+/* Отключение стекла: системная настройка, ручной переключатель или
+   отсутствие поддержки backdrop-filter. Поверхности становятся плотными,
+   ничего не разъезжается. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-blur: 0px;
+    --glass-blur-chrome: 0px;
+    --glass-blur-sheet: 0px;
+    --glass-film: #ffffff;
+    --glass-film-chrome: #ffffff;
+    --glass-film-strong: #ffffff;
+    --glass-film-subtle: #f4f5f8;
+    --ambient-1: transparent;
+    --ambient-2: transparent;
+    --ambient-3: transparent;
+    --ambient-4: transparent;
+  }
+}
+
+:root[data-surface="solid"] {
+  --glass-blur: 0px;
+  --glass-blur-chrome: 0px;
+  --glass-blur-sheet: 0px;
+  --glass-film: #ffffff;
+  --glass-film-chrome: #ffffff;
+  --glass-film-strong: #ffffff;
+  --glass-film-subtle: #f4f5f8;
+  --glass-rim-top: transparent;
+  --ambient-1: transparent;
+  --ambient-2: transparent;
+  --ambient-3: transparent;
+  --ambient-4: transparent;
 }

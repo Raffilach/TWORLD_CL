@@ -21,8 +21,12 @@
   gap: var(--space-3);
   min-height: var(--header-height);
   padding: calc(var(--safe-top) + var(--space-2)) var(--gutter) var(--space-2);
-  background: var(--color-surface);
-  border-bottom: var(--border-width) solid var(--color-border);
+  /* Шапка стеклянная: контент проезжает под ней и остаётся угадываемым. */
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border-bottom: var(--border-width) solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
 }
 
 .app__title {
@@ -36,19 +40,31 @@
   max-width: var(--content-max-width);
   margin: 0 auto;
   padding: var(--space-4) var(--gutter)
-    calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-6));
+    calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-7));
 }
 
 /* Нижний таб-бар. Индикатор домашней полоски его не перекрывает. */
+/* Плавающая капсула, а не приклеенная к низу полоса: так видно, что это
+   отдельный слой поверх контента. Индикатор домашней полоски её
+   не перекрывает — снизу отступ на safe area. */
 .tabbar {
   position: fixed;
-  inset: auto 0 0 0;
+  inset: auto var(--gutter) calc(var(--safe-bottom) + var(--space-2)) var(--gutter);
   z-index: var(--z-tabbar);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background: var(--color-surface);
-  border-top: var(--border-width) solid var(--color-border);
-  padding-bottom: var(--safe-bottom);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  border-radius: var(--radius-capsule);
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border: var(--border-width) solid var(--glass-border);
+  box-shadow:
+    var(--glass-shadow-raised),
+    inset 0 1px 0 var(--glass-rim-top),
+    inset 0 -1px 0 var(--glass-rim-bottom);
+  overflow: hidden;
 }
 
 .tabbar__item {
@@ -64,9 +80,12 @@
   text-decoration: none;
 }
 
+/* Активная вкладка подсвечивается своим стеклом внутри капсулы. */
 .tabbar__item[aria-current="page"] {
   color: var(--color-text);
   font-weight: var(--font-weight-medium);
+  background: var(--glass-film);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
 }
 
 .tabbar__icon { font-size: var(--font-size-lg); line-height: 1; }
@@ -76,7 +95,7 @@
   position: fixed;
   left: var(--gutter);
   right: var(--gutter);
-  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-2));
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-6));
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
@@ -84,24 +103,38 @@
   gap: var(--space-3);
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--color-accent);
   color: var(--color-accent-text);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-capsule);
+  box-shadow: var(--glass-shadow-raised), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   text-decoration: none;
 }
 
 /* ---------- Карточки --------------------------------------------------- */
 .card {
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
+  position: relative;
+  background: var(--glass-film);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: var(--border-width) solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   margin-bottom: var(--space-3);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-rim-top),
+    inset 0 -1px 0 var(--glass-rim-bottom);
 }
 
-.card--flat { border: none; background: transparent; padding: 0; }
+.card--flat {
+  border: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 .card--sunken { background: var(--color-surface-sunken); }
 
 .card__head {
@@ -166,24 +199,39 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: var(--border-width) solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--glass-film);
+  border-color: var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
-  transition: background var(--duration-fast) var(--easing);
+  /* Нажатие прижимает стекло: без отклика сенсорная кнопка мертва. */
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
 }
 
-.btn:active { background: var(--color-surface-sunken); }
+.btn:active {
+  transform: scale(0.97);
+  background: var(--glass-film-strong);
+}
 .btn:disabled { opacity: 0.5; }
 
 .btn--primary {
   background: var(--color-accent);
   color: var(--color-accent-text);
   border-color: var(--color-accent);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .btn--primary:active { background: var(--color-accent-hover); }
 
 .btn--lg { min-height: var(--tap-min-lg); font-size: var(--font-size-lg); width: 100%; }
-.btn--ghost { border-color: transparent; background: transparent; }
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 .btn--pill { border-radius: var(--radius-pill); }
 .btn--square { padding: var(--space-2); }
 
@@ -192,8 +240,14 @@
   position: sticky;
   bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-2));
   z-index: var(--z-sticky);
-  padding-top: var(--space-3);
-  background: linear-gradient(to top, var(--color-bg) 70%, transparent);
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-2);
+  background: linear-gradient(
+    to top,
+    var(--ambient-base) 40%,
+    color-mix(in srgb, var(--ambient-base) 70%, transparent) 75%,
+    transparent
+  );
 }
 
 /* ---------- Чипы ---------------------------------------------------------- */
@@ -204,10 +258,16 @@
   min-height: var(--tap-min);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-pill);
-  border: var(--border-width) solid var(--color-border);
-  background: var(--color-surface);
+  border: var(--border-width) solid var(--glass-border);
+  background: var(--glass-film-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
   font-size: var(--font-size-sm);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
 }
+
+.chip:active { transform: scale(0.96); }
 
 .chip[aria-pressed="true"] {
   background: var(--color-accent);
@@ -230,6 +290,8 @@
 .field__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
 
 /* Крупный ввод числа — вес, секунды. Одно касание и цифровая клавиатура. */
+/* Крупная цифра веса — это не «поле», а само значение на карточке:
+   снимаем всё оформление, которое поля получают по умолчанию. */
 .number-input {
   font-size: var(--font-size-hero);
   font-weight: var(--font-weight-bold);
@@ -237,6 +299,9 @@
   text-align: center;
   border: none;
   background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
   padding: 0;
   min-height: var(--tap-min-lg);
   width: 100%;
@@ -248,11 +313,18 @@
   min-width: var(--tap-min);
   min-height: var(--tap-min);
   border-radius: var(--radius-md);
-  border: var(--border-width) solid var(--color-border);
-  background: var(--color-surface);
+  border: var(--border-width) solid var(--glass-border);
+  background: var(--glass-film);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
   font-size: var(--font-size-lg);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
 }
-.stepper__btn:active { background: var(--color-surface-sunken); }
+.stepper__btn:active {
+  transform: scale(0.94);
+  background: var(--glass-film-strong);
+}
 .stepper__value {
   flex: 1;
   text-align: center;
@@ -267,10 +339,15 @@
   flex: 1;
   min-height: var(--tap-min);
   border-radius: var(--radius-md);
-  border: var(--border-width) solid var(--color-border);
-  background: var(--color-surface);
+  border: var(--border-width) solid var(--glass-border);
+  background: var(--glass-film);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
   font-variant-numeric: tabular-nums;
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
 }
+.scale__btn:active { transform: scale(0.94); }
 .scale__btn[aria-pressed="true"] {
   background: var(--color-accent);
   color: var(--color-accent-text);
@@ -298,9 +375,12 @@
   height: var(--tap-min);
   flex: none;
   border-radius: var(--radius-pill);
-  border: var(--border-width-strong) solid var(--color-border);
-  background: var(--color-surface);
+  border: var(--border-width-strong) solid var(--glass-border);
+  background: var(--glass-film-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
+  transition: transform var(--duration-fast) var(--easing);
 }
+.dot:active { transform: scale(0.9); }
 .dot--filled { background: var(--color-filled); border-color: var(--color-filled); }
 
 .badge {
@@ -316,12 +396,14 @@
 .notice {
   padding: var(--space-3);
   border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--glass-border);
   border-left: var(--border-width-strong) solid var(--color-warn-border);
-  background: var(--color-warn-bg);
-  color: var(--color-warn);
+  background: var(--glass-film-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
-.notice--info { border-left-color: var(--color-border-strong); background: var(--color-info-bg); }
+.notice--info { border-left-color: var(--color-border-strong); }
 
 /* ---------- Списки и строки подходов ------------------------------------------ */
 .list { display: flex; flex-direction: column; }
@@ -341,19 +423,29 @@
 .swipe-row { position: relative; overflow: hidden; touch-action: pan-y; }
 .swipe-row__content {
   position: relative;
-  background: var(--color-surface);
+  z-index: 1;
+  /* Непрозрачно намеренно: под строкой лежит «Удалить»,
+     и он должен появляться только при свайпе. */
+  background: var(--glass-film-strong);
   transition: transform var(--duration-fast) var(--easing);
   will-change: transform;
 }
 .swipe-row__action {
   position: absolute;
+  z-index: 0;
   inset: 0 0 0 auto;
   display: flex;
   align-items: center;
   padding: 0 var(--space-4);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  /* Скрыто, пока строку не потянули: сквозь стеклянный контент
+     надпись иначе просвечивает всегда. */
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing);
 }
+
+.swipe-row[data-swiping="true"] .swipe-row__action { opacity: 1; }
 
 .set-row {
   display: grid;
@@ -377,13 +469,23 @@
 }
 
 .exercise-item {
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: var(--border-width) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-film-subtle);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: inset 0 1px 0 var(--glass-rim-top);
   margin-bottom: var(--space-2);
   overflow: hidden;
+  transition: background var(--duration-base) var(--easing);
 }
-.exercise-item--active { border-color: var(--color-accent); border-width: var(--border-width-strong); }
+/* Текущее упражнение — самое плотное стекло на экране: взгляд между
+   подходами должен находить его мгновенно. */
+.exercise-item--active {
+  border-color: var(--color-border-strong);
+  background: var(--glass-film-strong);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-rim-top);
+}
 .exercise-item--done { background: var(--color-surface-sunken); }
 
 .exercise-item__head {
@@ -411,15 +513,20 @@
 /* Липкая плашка таймера отдыха. */
 .rest-timer {
   position: sticky;
-  bottom: calc(var(--tabbar-height) + var(--safe-bottom));
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-3));
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
-  margin: var(--space-3) calc(var(--gutter) * -1) 0;
-  background: var(--color-surface-raised);
-  border-top: var(--border-width) solid var(--color-border);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0 0;
+  border-radius: var(--radius-lg);
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border: var(--border-width) solid var(--glass-border);
+  box-shadow: var(--glass-shadow-raised), inset 0 1px 0 var(--glass-rim-top);
 }
 
 .timer-display {
@@ -436,6 +543,8 @@
   inset: 0;
   z-index: var(--z-sheet);
   background: var(--color-overlay);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: flex-end;
 }
@@ -445,8 +554,13 @@
   margin: 0 auto;
   max-height: 85dvh;
   overflow-y: auto;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--glass-film-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sheet)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-sheet)) saturate(var(--glass-saturate));
+  border: var(--border-width) solid var(--glass-border);
+  border-bottom: none;
+  box-shadow: var(--glass-shadow-raised), inset 0 1px 0 var(--glass-rim-top);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: var(--space-4) var(--gutter) calc(var(--safe-bottom) + var(--space-5));
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -464,7 +578,7 @@
   position: fixed;
   left: var(--gutter);
   right: var(--gutter);
-  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-3));
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-5));
   z-index: var(--z-toast);
   display: flex;
   align-items: center;
@@ -473,10 +587,10 @@
   max-width: var(--content-max-width);
   margin: 0 auto;
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-capsule);
   background: var(--color-accent);
   color: var(--color-accent-text);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--glass-shadow-raised), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   font-size: var(--font-size-sm);
 }
 .toast__action {
@@ -561,16 +675,16 @@
   /* Таб-бар превращается в боковую навигацию. */
   .tabbar {
     position: sticky;
-    inset: 0 auto 0 0;
-    height: 100dvh;
-    width: 200px;
+    inset: var(--space-4) auto var(--space-4) var(--space-4);
+    height: calc(100dvh - var(--space-6));
+    width: 220px;
     grid-template-columns: 1fr;
     grid-auto-rows: max-content;
     align-content: start;
     gap: var(--space-1);
-    padding: var(--space-5) var(--space-3);
-    border-top: none;
-    border-right: var(--border-width) solid var(--color-border);
+    padding: var(--space-4) var(--space-3);
+    margin: 0;
+    border-radius: var(--radius-xl);
   }
   .tabbar__item {
     flex-direction: row;
@@ -580,7 +694,7 @@
     border-radius: var(--radius-md);
     padding: var(--space-3);
   }
-  .tabbar__item[aria-current="page"] { background: var(--color-surface-sunken); }
+  .tabbar__item[aria-current="page"] { border-radius: var(--radius-md); }
   .active-session, .toast, .thumb-zone, .rest-timer { bottom: var(--space-4); }
   .thumb-zone { position: static; background: none; }
 }

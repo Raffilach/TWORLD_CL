@@ -24,7 +24,7 @@ export function SwipeRow({
   const THRESHOLD = 96;
 
   return (
-    <div className="swipe-row">
+    <div className="swipe-row" data-swiping={offset < -8 ? "true" : undefined}>
       <span className="swipe-row__action" aria-hidden="true">
         {actionLabel}
       </span>

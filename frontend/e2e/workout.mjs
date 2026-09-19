@@ -17,8 +17,9 @@ page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 page.on("pageerror", (e) => errors.push(e.message));
 
 const dir = process.env.SHOT_DIR || "./e2e/screenshots";
+const BASE = process.env.APP_URL ?? "http://127.0.0.1:5173";
 
-await page.goto("http://127.0.0.1:5174", { waitUntil: "networkidle" });
+await page.goto(BASE, { waitUntil: "networkidle" });
 await page.getByLabel(/Ник, email или телефон/).fill("demo_user");
 await page.getByLabel("Пароль").fill("demo12345");
 await page.getByRole("button", { name: "Войти" }).click();
