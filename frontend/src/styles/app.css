@@ -1,0 +1,586 @@
+/* Раскладка и компоненты. Все значения — из токенов. */
+
+/* ---------- Каркас приложения --------------------------------------- */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* Экраны без таб-бара (активная тренировка): липкие элементы прижимаются
+   к низу экрана, а не висят над пустым местом. */
+.app--fullscreen { --tabbar-height: 0px; }
+
+.app__header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--header-height);
+  padding: calc(var(--safe-top) + var(--space-2)) var(--gutter) var(--space-2);
+  background: var(--color-surface);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.app__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.app__main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--gutter)
+    calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-6));
+}
+
+/* Нижний таб-бар. Индикатор домашней полоски его не перекрывает. */
+.tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: var(--z-tabbar);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--color-surface);
+  border-top: var(--border-width) solid var(--color-border);
+  padding-bottom: var(--safe-bottom);
+}
+
+.tabbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.tabbar__item[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.tabbar__icon { font-size: var(--font-size-lg); line-height: 1; }
+
+/* Плашка активной тренировки — видна на всех вкладках. */
+.active-session {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-2));
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-3);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+}
+
+/* ---------- Карточки --------------------------------------------------- */
+.card {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.card--flat { border: none; background: transparent; padding: 0; }
+.card--sunken { background: var(--color-surface-sunken); }
+
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.card__title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.card__action {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ---------- Текст ------------------------------------------------------- */
+.hero-number {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.big-number {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.tiny { color: var(--color-text-muted); font-size: var(--font-size-xs); }
+.mono { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; }
+.stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.stack--tight { gap: var(--space-2); }
+.row { display: flex; align-items: center; gap: var(--space-2); }
+.row--between { justify-content: space-between; }
+.row--wrap { flex-wrap: wrap; }
+.grow { flex: 1; }
+
+/* ---------- Кнопки ------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: background var(--duration-fast) var(--easing);
+}
+
+.btn:active { background: var(--color-surface-sunken); }
+.btn:disabled { opacity: 0.5; }
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+.btn--primary:active { background: var(--color-accent-hover); }
+
+.btn--lg { min-height: var(--tap-min-lg); font-size: var(--font-size-lg); width: 100%; }
+.btn--ghost { border-color: transparent; background: transparent; }
+.btn--pill { border-radius: var(--radius-pill); }
+.btn--square { padding: var(--space-2); }
+
+/* Основные действия — в нижней трети экрана, в зоне большого пальца. */
+.thumb-zone {
+  position: sticky;
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-2));
+  z-index: var(--z-sticky);
+  padding-top: var(--space-3);
+  background: linear-gradient(to top, var(--color-bg) 70%, transparent);
+}
+
+/* ---------- Чипы ---------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+/* Компактный чип всё равно держит 44×44: правило Apple HIG действует
+   и для второстепенных кнопок — в зале палец не становится точнее. */
+.chip--sm {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- Поля ввода ------------------------------------------------------ */
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
+.field__label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.field__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+/* Крупный ввод числа — вес, секунды. Одно касание и цифровая клавиатура. */
+.number-input {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-height: var(--tap-min-lg);
+  width: 100%;
+}
+.number-input:focus { outline: none; }
+
+.stepper { display: flex; align-items: center; gap: var(--space-2); }
+.stepper__btn {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--font-size-lg);
+}
+.stepper__btn:active { background: var(--color-surface-sunken); }
+.stepper__value {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Шкала 1–5 и 1–10: кнопки видны сразу, без модалок. */
+.scale { display: flex; gap: var(--space-2); }
+.scale__btn {
+  flex: 1;
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  font-variant-numeric: tabular-nums;
+}
+.scale__btn[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+/* ---------- Индикаторы ------------------------------------------------------- */
+.progress {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  background: var(--color-filled);
+  border-radius: var(--radius-pill);
+  transition: width var(--duration-base) var(--easing);
+}
+
+/* Счётчик воды: тап по кружку = стакан. */
+.dots { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.dot {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: none;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-strong) solid var(--color-border);
+  background: var(--color-surface);
+}
+.dot--filled { background: var(--color-filled); border-color: var(--color-filled); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.notice {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border-left: var(--border-width-strong) solid var(--color-warn-border);
+  background: var(--color-warn-bg);
+  color: var(--color-warn);
+  font-size: var(--font-size-sm);
+}
+.notice--info { border-left-color: var(--color-border-strong); background: var(--color-info-bg); }
+
+/* ---------- Списки и строки подходов ------------------------------------------ */
+.list { display: flex; flex-direction: column; }
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  padding: var(--space-3) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+  text-align: left;
+  width: 100%;
+}
+.list__item:last-child { border-bottom: none; }
+
+/* Свайп по строке подхода — удалить. */
+.swipe-row { position: relative; overflow: hidden; touch-action: pan-y; }
+.swipe-row__content {
+  position: relative;
+  background: var(--color-surface);
+  transition: transform var(--duration-fast) var(--easing);
+  will-change: transform;
+}
+.swipe-row__action {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.set-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.set-row--warmup { color: var(--color-text-muted); }
+
+/* ---------- Экран тренировки ----------------------------------------------------- */
+.block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-secondary);
+}
+
+.exercise-item {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+}
+.exercise-item--active { border-color: var(--color-accent); border-width: var(--border-width-strong); }
+.exercise-item--done { background: var(--color-surface-sunken); }
+
+.exercise-item__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap-min-lg);
+  padding: var(--space-3);
+  text-align: left;
+}
+.exercise-item__body { padding: 0 var(--space-3) var(--space-3); }
+
+.status-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-strong) solid var(--color-border-strong);
+  flex: none;
+}
+.status-dot--done { background: var(--color-filled); border-color: var(--color-filled); }
+.status-dot--skipped { background: var(--color-empty); border-color: var(--color-empty); }
+.status-dot--failed { border-style: dashed; }
+
+/* Липкая плашка таймера отдыха. */
+.rest-timer {
+  position: sticky;
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom));
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin: var(--space-3) calc(var(--gutter) * -1) 0;
+  background: var(--color-surface-raised);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.timer-display {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* ---------- Нижний лист ------------------------------------------------------------ */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: flex-end;
+}
+.sheet {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  max-height: 85dvh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-4) var(--gutter) calc(var(--safe-bottom) + var(--space-5));
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  margin: 0 auto var(--space-4);
+}
+
+/* ---------- Тост отмены -------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-3));
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-sm);
+}
+.toast__action {
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  min-height: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------- Статус синхронизации ---------------------------------------------------------- */
+.sync-status {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ---------- Заглушка «Друзья» ------------------------------------------------------------- */
+.friends-art {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto var(--space-5);
+  display: block;
+}
+.feature-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.feature-list__item { display: flex; gap: var(--space-3); align-items: flex-start; }
+.feature-list__marker {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  margin-top: 0.5em;
+  flex: none;
+}
+
+/* ---------- Графики ------------------------------------------------------------------------ */
+.chart-wrap { width: 100%; height: 220px; margin: var(--space-2) 0; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.chart-legend__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: var(--space-1);
+}
+
+/* Теплокарта года */
+.heatmap { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 2px; overflow-x: auto; }
+.heatmap__cell { width: 11px; height: 11px; border-radius: 2px; background: var(--color-surface-sunken); }
+
+/* ---------- Формы входа ---------------------------------------------------------------------- */
+.auth {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--gutter) calc(var(--safe-bottom) + var(--space-6));
+}
+
+/* ---------- Адаптив --------------------------------------------------------------------------
+   На десктопе — многоколоночная раскладка, а не растянутый мобильный экран. */
+@media (min-width: 640px) {
+  .app__main { padding-left: var(--space-5); padding-right: var(--space-5); }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: start; }
+}
+
+@media (min-width: 1024px) {
+  .app { flex-direction: row; }
+  .app__main {
+    max-width: var(--content-max-width-wide);
+    padding-bottom: var(--space-6);
+  }
+  .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); align-items: start; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+
+  /* Таб-бар превращается в боковую навигацию. */
+  .tabbar {
+    position: sticky;
+    inset: 0 auto 0 0;
+    height: 100dvh;
+    width: 200px;
+    grid-template-columns: 1fr;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-3);
+    border-top: none;
+    border-right: var(--border-width) solid var(--color-border);
+  }
+  .tabbar__item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    font-size: var(--font-size-base);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+  .tabbar__item[aria-current="page"] { background: var(--color-surface-sunken); }
+  .active-session, .toast, .thumb-zone, .rest-timer { bottom: var(--space-4); }
+  .thumb-zone { position: static; background: none; }
+}

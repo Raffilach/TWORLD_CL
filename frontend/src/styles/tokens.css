@@ -1,0 +1,235 @@
+/* ==========================================================================
+   ТОКЕНЫ ОФОРМЛЕНИЯ — единственный файл, который правится при подключении
+   реального визуального стиля.
+
+   Значения здесь намеренно нейтральные: серая шкала, системный шрифт,
+   умеренные радиусы. Это заглушки, а не дизайн-решение. Ни один другой
+   CSS в проекте не содержит хардкодов цвета, шрифта, отступа или радиуса —
+   только var(--...). Замена этого файла меняет внешний вид приложения
+   целиком, не трогая ни одного компонента.
+
+   Семантические токены (ok / warn / info) тоже серые: предупреждение
+   о резком скачке веса должно быть заметным, но не выглядеть аварией.
+   Приложение не ругает пользователя цветом.
+   ========================================================================== */
+
+:root {
+  /* --- Поверхности и текст ---------------------------------------------- */
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #ebebeb;
+  --color-overlay: rgba(0, 0, 0, 0.32);
+
+  --color-text: #1a1a1a;
+  --color-text-secondary: #5c5c5c;
+  --color-text-muted: #8a8a8a;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #dcdcdc;
+  --color-border-strong: #b8b8b8;
+
+  /* --- Акцент (одна нейтральная тёмная краска-заглушка) ------------------ */
+  --color-accent: #2f2f2f;
+  --color-accent-hover: #444444;
+  --color-accent-text: #ffffff;
+  --color-accent-subtle: #e6e6e6;
+
+  /* --- Семантика: спокойная, без «аварийного» красного ------------------- */
+  --color-ok: #3f3f3f;
+  --color-ok-bg: #ececec;
+  --color-warn: #5a5a5a;
+  --color-warn-bg: #e8e8e8;
+  --color-warn-border: #a5a5a5;
+  --color-info: #4a4a4a;
+  --color-info-bg: #eeeeee;
+
+  /* Нейтральное «не отмечено». Намеренно НЕ красное:
+     пропуск — это данные, а не провал. */
+  --color-empty: #cfcfcf;
+  --color-filled: #4a4a4a;
+
+  /* --- Графики: последовательная серая шкала ----------------------------- */
+  --chart-1: #2f2f2f;
+  --chart-2: #5e5e5e;
+  --chart-3: #8c8c8c;
+  --chart-4: #b0b0b0;
+  --chart-5: #cfcfcf;
+  --chart-grid: #e2e2e2;
+  --chart-axis: #9a9a9a;
+  --chart-trend: #1a1a1a;   /* жирная линия тренда */
+  --chart-raw: #c2c2c2;     /* бледные сырые точки */
+  --chart-event: #9a9a9a;   /* вертикальные метки событий */
+
+  /* --- Типографика ------------------------------------------------------- */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --font-family-display: var(--font-family);
+
+  /* 16px — минимальный размер для input.
+     Меньше — и Safari принудительно зумит страницу при фокусе. */
+  --font-size-input: 16px;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-hero: 3rem;   /* крупная цифра веса и таймера */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.15;
+  --line-height-base: 1.45;
+  --line-height-loose: 1.65;
+
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-wide: 0.04em;
+
+  /* --- Пространство ------------------------------------------------------ */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --gutter: 1rem;           /* боковое поле экрана */
+
+  /* --- Форма -------------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+  --border-width-strong: 2px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* --- Слои --------------------------------------------------------------- */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-tabbar: 20;
+  --z-sheet: 30;
+  --z-toast: 40;
+
+  /* --- Движение ------------------------------------------------------------ */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --easing: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* --- Тач ------------------------------------------------------------------ */
+  --tap-min: 44px;          /* минимальная тапабельная область, Apple HIG */
+  --tap-min-lg: 56px;       /* основные действия в зоне большого пальца */
+
+  /* --- Безопасные зоны iPhone ------------------------------------------------ */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* --- Раскладка -------------------------------------------------------------- */
+  --tabbar-height: 56px;
+  --header-height: 52px;
+  --content-max-width: 720px;
+  --content-max-width-wide: 1280px;
+  --breakpoint-tablet: 640px;
+  --breakpoint-desktop: 1024px;
+}
+
+/* Тёмная тема — переопределение тех же токенов, ничего больше. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #121212;
+    --color-surface: #1c1c1c;
+    --color-surface-raised: #242424;
+    --color-surface-sunken: #0d0d0d;
+    --color-overlay: rgba(0, 0, 0, 0.6);
+
+    --color-text: #f0f0f0;
+    --color-text-secondary: #b0b0b0;
+    --color-text-muted: #808080;
+    --color-text-inverse: #121212;
+
+    --color-border: #333333;
+    --color-border-strong: #4d4d4d;
+
+    --color-accent: #e8e8e8;
+    --color-accent-hover: #ffffff;
+    --color-accent-text: #121212;
+    --color-accent-subtle: #2a2a2a;
+
+    --color-ok: #cfcfcf;
+    --color-ok-bg: #242424;
+    --color-warn: #c0c0c0;
+    --color-warn-bg: #262626;
+    --color-warn-border: #5a5a5a;
+    --color-info: #c8c8c8;
+    --color-info-bg: #222222;
+
+    --color-empty: #3a3a3a;
+    --color-filled: #cccccc;
+
+    --chart-1: #e8e8e8;
+    --chart-2: #b8b8b8;
+    --chart-3: #8c8c8c;
+    --chart-4: #626262;
+    --chart-5: #454545;
+    --chart-grid: #2c2c2c;
+    --chart-axis: #6e6e6e;
+    --chart-trend: #f0f0f0;
+    --chart-raw: #555555;
+    --chart-event: #707070;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Ручной выбор темы в настройках перекрывает системный. */
+:root[data-theme="dark"] {
+  --color-bg: #121212;
+  --color-surface: #1c1c1c;
+  --color-surface-raised: #242424;
+  --color-surface-sunken: #0d0d0d;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-text: #f0f0f0;
+  --color-text-secondary: #b0b0b0;
+  --color-text-muted: #808080;
+  --color-text-inverse: #121212;
+  --color-border: #333333;
+  --color-border-strong: #4d4d4d;
+  --color-accent: #e8e8e8;
+  --color-accent-hover: #ffffff;
+  --color-accent-text: #121212;
+  --color-accent-subtle: #2a2a2a;
+  --color-ok: #cfcfcf;
+  --color-ok-bg: #242424;
+  --color-warn: #c0c0c0;
+  --color-warn-bg: #262626;
+  --color-warn-border: #5a5a5a;
+  --color-info: #c8c8c8;
+  --color-info-bg: #222222;
+  --color-empty: #3a3a3a;
+  --color-filled: #cccccc;
+  --chart-1: #e8e8e8;
+  --chart-2: #b8b8b8;
+  --chart-3: #8c8c8c;
+  --chart-4: #626262;
+  --chart-5: #454545;
+  --chart-grid: #2c2c2c;
+  --chart-axis: #6e6e6e;
+  --chart-trend: #f0f0f0;
+  --chart-raw: #555555;
+  --chart-event: #707070;
+}
