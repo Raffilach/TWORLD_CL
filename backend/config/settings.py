@@ -191,6 +191,12 @@ EMAIL_BACKEND = os.getenv(
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@tworld.local")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
+# Web-push. Без ключей уведомления просто не отправляются,
+# всё остальное приложение работает как обычно.
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+VAPID_CONTACT_EMAIL = os.getenv("VAPID_CONTACT_EMAIL", "noreply@tworld.local")
+
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "")
 CELERY_TASK_ALWAYS_EAGER = not CELERY_BROKER_URL
 

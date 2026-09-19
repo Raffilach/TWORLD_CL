@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { api } from "../../shared/api/client";
 import { Card, Chip, Notice } from "../../shared/ui/primitives";
@@ -17,7 +18,16 @@ interface Settings {
 
 interface Schedule {
   max_per_day: number;
+  vapid_public_key: string;
   items: { kind: string; at: string; title: string; body: string }[];
+}
+
+/** VAPID-ключ приходит строкой base64url, а подписке нужен Uint8Array. */
+function urlBase64ToUint8Array(value: string): Uint8Array {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map((char) => char.charCodeAt(0)));
 }
 
 /**
@@ -28,6 +38,7 @@ interface Schedule {
  * и не должно появиться.
  */
 export function NotificationSettings() {
+  const [error, setError] = useState<string | null>(null);
   const settings = useQuery({
     queryKey: ["notification-settings"],
     queryFn: () => api.get<Settings>("/notifications/settings/"),
@@ -46,9 +57,48 @@ export function NotificationSettings() {
   };
 
   const requestPermission = async () => {
-    if (!("Notification" in window)) return;
-    const result = await Notification.requestPermission();
-    await patch({ push_enabled: result === "granted" });
+    if (data.push_enabled) {
+      await patch({ push_enabled: false });
+      return;
+    }
+    if (!("Notification" in window)) {
+      setError("Браузер не поддерживает уведомления.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      setError("Разрешение не выдано. Уведомлений не будет — приложение работает и так.");
+      return;
+    }
+
+    // Подписка на пуш: без неё уведомления приходят, только пока
+    // приложение открыто.
+    try {
+      const key = schedule.data?.vapid_public_key;
+      const registration = await navigator.serviceWorker?.ready;
+      if (registration && key) {
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(key) as BufferSource,
+        });
+        const json = subscription.toJSON();
+        await api.post("/notifications/push/", {
+          endpoint: json.endpoint,
+          p256dh: json.keys?.p256dh,
+          auth: json.keys?.auth,
+          user_agent: navigator.userAgent.slice(0, 300),
+        });
+      } else if (!key) {
+        setError(
+          "На сервере не настроены ключи VAPID — уведомления будут приходить, " +
+            "только пока приложение открыто.",
+        );
+      }
+    } catch {
+      setError("Не удалось подписаться на пуш. Разрешение сохранено.");
+    }
+
+    await patch({ push_enabled: true });
   };
 
   const data = settings.data;
@@ -142,6 +192,8 @@ export function NotificationSettings() {
             </ul>
           </div>
         )}
+
+        {error && <Notice>{error}</Notice>}
 
         <Notice tone="info">
           Формулировки нейтральные: приложение не напоминает о пропусках

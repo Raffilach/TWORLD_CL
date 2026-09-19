@@ -228,6 +228,7 @@ TWORLD_CL/
 | `VITE_API_URL` | `/api` | Адрес API для сборки фронтенда |
 | `VITE_DEV_API_PROXY` | `http://localhost:8000` | Куда Vite проксирует `/api` в разработке |
 | `CELERY_BROKER_URL` | пусто | Пусто — задачи выполняются синхронно, Redis не нужен |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_CONTACT_EMAIL` | пусто | Web-push. Без них уведомления не отправляются, остальное работает |
 
 ---
 
@@ -247,6 +248,23 @@ TWORLD_CL/
    Сохранить как PDF» даёт тот же A4.
 
 ---
+
+## Уведомления
+
+Не больше двух в день, каждое отключается отдельно, формулировок с укором нет.
+
+```bash
+python manage.py generate_vapid_keys      # один раз, ключи в .env
+python manage.py send_notifications       # по cron каждые 5 минут
+*/5 * * * * cd /path/to/backend && python manage.py send_notifications
+```
+
+Команда сама следит за лимитом, тихими часами и за тем, чтобы одно
+уведомление не ушло дважды. `--dry-run` печатает, что было бы отправлено.
+
+Ограничение iOS: web-push работает только для PWA, добавленной на домашний
+экран, начиная с iOS 16.4. Без ключей VAPID приложение остаётся полностью
+рабочим — просто без напоминаний.
 
 ## Apple Health
 

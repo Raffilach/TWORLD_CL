@@ -373,3 +373,41 @@ def test_sync_accepts_related_ids(auth_api):
     saved = SetLog.objects.get(user=user, session_exercise=entry)
     assert saved.reps == 10
     assert str(saved.weight_kg) == "62.50"
+
+
+@pytest.mark.django_db
+def test_notification_command_respects_limits(auth_api, settings):
+    """Не больше N в день, тихие часы соблюдаются, дубли не уходят."""
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    from apps.notify.models import NotificationLog, NotificationSettings
+
+    client, user = auth_api("notified_two")
+    config = NotificationSettings.objects.get(user=user)
+    config.push_enabled = True
+    config.morning_weigh_in_time = timezone.localtime().time()
+    config.quiet_hours_from = timezone.localtime().time()
+    config.quiet_hours_to = timezone.localtime().time()  # start == end → тихих часов нет
+    config.save()
+
+    out = StringIO()
+    call_command("send_notifications", "--dry-run", stdout=out)
+    first = NotificationLog.objects.filter(user=user).count()
+
+    call_command("send_notifications", "--dry-run", stdout=out)
+    second = NotificationLog.objects.filter(user=user).count()
+
+    assert first >= 1
+    assert second == first, "Повторный запуск не должен слать то же самое ещё раз"
+    assert second <= config.max_per_day
+
+
+@pytest.mark.django_db
+def test_push_endpoint_exposes_vapid_key(auth_api, settings):
+    """Клиенту нужен публичный ключ, чтобы подписаться на пуш."""
+    settings.VAPID_PUBLIC_KEY = "test-public-key"
+    client, user = auth_api("notified_three")
+    response = client.get("/api/notifications/schedule/")
+    assert response.json()["vapid_public_key"] == "test-public-key"

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.conf import settings as django_settings
 from django.utils import timezone
 from rest_framework.response import Response
 from drf_spectacular.types import OpenApiTypes
@@ -86,6 +87,8 @@ class ScheduleView(APIView):
 
         return Response({
             "max_per_day": settings_obj.max_per_day,
+            # Клиент подписывается на пуш этим ключом; пусто — пуш не настроен.
+            "vapid_public_key": django_settings.VAPID_PUBLIC_KEY,
             "quiet_hours": {
                 "from": settings_obj.quiet_hours_from,
                 "to": settings_obj.quiet_hours_to,

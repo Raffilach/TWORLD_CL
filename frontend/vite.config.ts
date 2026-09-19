@@ -13,6 +13,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       VitePWA({
+        // Свой Service Worker: нужен обработчик push-уведомлений,
+        // генерируемый Workbox его не содержит.
+        strategies: "injectManifest",
+        srcDir: "src",
+        filename: "sw.ts",
         registerType: "autoUpdate",
         includeAssets: ["favicon.svg", "icons/*.png"],
         manifest: {
@@ -38,22 +43,9 @@ export default defineConfig(({ mode }) => {
             },
           ],
         },
-        workbox: {
+        injectManifest: {
           globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
-          navigateFallback: "/index.html",
-          runtimeCaching: [
-            {
-              // Данные читаются из кэша мгновенно, обновляются в фоне.
-              // В зале и метро сети нет — это нормальный режим работы.
-              urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "tworld-api",
-                networkTimeoutSeconds: 4,
-                expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 14 },
-              },
-            },
-          ],
+          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         },
         devOptions: { enabled: false },
       }),
