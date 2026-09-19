@@ -26,7 +26,7 @@ Django + DRF + React/Vite + PostgreSQL — объективно хороший �
 | Стили | **Чистый CSS + CSS-модули, без UI-китов и без Tailwind** | Tailwind — это уже дизайн-решение (своя шкала отступов, радиусов, цветов). По твоему требованию «не придумывай стиль» всё оформление живёт в одном файле токенов. |
 | Примитивы | Radix UI (headless) | Доступность (фокус-трапы, ARIA) без единого пикселя чужого стиля. |
 | PDF | WeasyPrint | HTML+CSS → A4, локальные шрифты, ч/б-читаемость. |
-| Фоновые задачи | Celery + Redis, **опционально** | Нужны только для PDF, расшифровки голоса и импорта Health. В dev работают синхронно (`CELERY_TASK_ALWAYS_EAGER`), проект поднимается без Redis. |
+| Фоновые задачи | **не нужны** | PDF собирается за доли секунды прямо в запросе, импорт Health — тоже. Очередь понадобится только для расшифровки голосовых заметок, и добавить её можно будет тогда, а не заранее. |
 | Документация API | drf-spectacular | OpenAPI 3.1 + Swagger UI. |
 
 **Явно НЕ берём:** UI-киты с готовым визуалом (MUI, Chakra, Ant), Tailwind, Redux (избыточен), GraphQL (усложняет оффлайн-кэш без выгоды).
@@ -38,7 +38,7 @@ Django + DRF + React/Vite + PostgreSQL — объективно хороший �
 ```
 TWORLD_CL/
 ├── backend/
-│   ├── config/              # settings (base/dev/prod), urls, asgi/wsgi, celery
+│   ├── config/              # settings, urls, asgi/wsgi, пороги предметной области
 │   ├── apps/
 │   │   ├── accounts/        # User, Profile, Settings, ApiToken, ShareLink, FeatureInterest
 │   │   ├── core/            # OwnedModel, SyncableModel, permissions, pagination, units

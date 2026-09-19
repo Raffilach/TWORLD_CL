@@ -227,7 +227,6 @@ TWORLD_CL/
 | `EMAIL_BACKEND` | консольный | Сброс пароля; в проде — SMTP |
 | `VITE_API_URL` | `/api` | Адрес API для сборки фронтенда |
 | `VITE_DEV_API_PROXY` | `http://localhost:8000` | Куда Vite проксирует `/api` в разработке |
-| `CELERY_BROKER_URL` | пусто | Пусто — задачи выполняются синхронно, Redis не нужен |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_CONTACT_EMAIL` | пусто | Web-push. Без них уведомления не отправляются, остальное работает |
 
 ---
