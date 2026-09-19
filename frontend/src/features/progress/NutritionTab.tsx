@@ -51,6 +51,24 @@ export function NutritionTab() {
       ),
   });
   const freeMeals = useList<FreeMeal>(["free-meals"], "/nutrition/free-meals/");
+  const today = useQuery({
+    queryKey: ["nutrition-today"],
+    queryFn: () =>
+      api.get<{
+        energy: {
+          adaptive: {
+            available: boolean;
+            reason?: string;
+            average_intake_kcal?: number;
+            estimated_tdee_kcal?: number;
+            trend_change_kg?: number;
+            note?: string;
+          };
+          formula: { bmr_kcal: number; note: string } | null;
+          target_kcal: number | null;
+        } | null;
+      }>("/nutrition/today/"),
+  });
 
   if (exceptions.isLoading) return <Loading />;
 
@@ -150,6 +168,35 @@ export function NutritionTab() {
           <Empty>Пока не планировался.</Empty>
         )}
       </Card>
+
+      {today.data?.energy && (
+        <Card title="Расход калорий">
+          {today.data.energy.adaptive.available ? (
+            <>
+              <p className="big-number">
+                {today.data.energy.adaptive.estimated_tdee_kcal} ккал
+              </p>
+              <p className="muted">
+                в среднем ел {today.data.energy.adaptive.average_intake_kcal} ккал,
+                тренд-вес {today.data.energy.adaptive.trend_change_kg} кг
+              </p>
+              <p className="tiny" style={{ marginTop: "var(--space-2)" }}>
+                {today.data.energy.adaptive.note}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="muted">{today.data.energy.adaptive.reason}</p>
+              {today.data.energy.formula && (
+                <p className="tiny" style={{ marginTop: "var(--space-2)" }}>
+                  Пока оценка по формуле: {today.data.energy.formula.bmr_kcal} ккал.{" "}
+                  {today.data.energy.formula.note}
+                </p>
+              )}
+            </>
+          )}
+        </Card>
+      )}
 
       <MealsCard />
 

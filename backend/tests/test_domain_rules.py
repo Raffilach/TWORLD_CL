@@ -314,3 +314,48 @@ def test_username_uniqueness_is_case_insensitive(api, make_user):
         "username": "RaffiLach", "email": "other@example.com", "password": "pass12345",
     }, format="json")
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_adaptive_tdee_uses_facts_not_formulas(make_user):
+    """Расход считается по потреблению и тренду веса, а не по формуле."""
+    from datetime import timedelta
+
+    from apps.body.models import WeightEntry
+    from apps.body.services import rebuild_trend
+    from apps.nutrition.models import MealEntry
+    from apps.nutrition.services import adaptive_tdee
+
+    user = make_user("energy_one")
+    today = timezone.localdate()
+
+    # Две недели: ел 2500 ккал, тренд-вес упал на 0,7 кг.
+    for offset in range(14, -1, -1):
+        day = today - timedelta(days=offset)
+        at = timezone.make_aware(
+            timezone.datetime.combine(day, timezone.datetime.min.time().replace(hour=13))
+        )
+        MealEntry.objects.create(user=user, at=at, calories=2500, protein_g=150)
+        WeightEntry.objects.create(
+            user=user,
+            at=at.replace(hour=8),
+            weight_kg=Decimal("80.00") - Decimal("0.05") * (14 - offset),
+        )
+    rebuild_trend(user)
+
+    result = adaptive_tdee(user)
+    assert result["available"] is True
+    assert result["average_intake_kcal"] == 2500
+    assert result["trend_change_kg"] < 0
+    # Вес падал — значит, расход выше потребления.
+    assert result["estimated_tdee_kcal"] > 2500
+
+
+@pytest.mark.django_db
+def test_adaptive_tdee_says_when_data_is_short(make_user):
+    from apps.nutrition.services import adaptive_tdee
+
+    user = make_user("energy_two")
+    result = adaptive_tdee(user)
+    assert result["available"] is False
+    assert "калориями" in result["reason"]

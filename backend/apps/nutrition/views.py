@@ -233,8 +233,19 @@ class NutritionTodayView(APIView):
             user=request.user, at__date=day, deleted_at__isnull=True
         ).aggregate(total=Sum("volume_ml"))["total"] or 0
         supplements = m.Supplement.objects.filter(user=request.user, is_active=True)
+        energy = None
+        if getattr(settings_obj, "track_calories", False):
+            from .services import adaptive_tdee, formula_bmr
+
+            energy = {
+                "adaptive": adaptive_tdee(request.user),
+                "formula": formula_bmr(request.user),
+                "target_kcal": getattr(settings_obj, "calorie_target", None),
+            }
+
         return Response({
             "date": day,
+            "energy": energy,
             "protein": {
                 "done_g": protein,
                 "target_g": getattr(settings_obj, "protein_target_g", 150),
