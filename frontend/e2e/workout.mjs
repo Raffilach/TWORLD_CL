@@ -25,8 +25,15 @@ await page.getByRole("button", { name: "Войти" }).click();
 await page.waitForSelector(".tabbar");
 await page.waitForTimeout(1200);
 
-// Старт тренировки одной кнопкой
-await page.getByRole("button", { name: "Начать", exact: true }).click();
+// Старт тренировки одной кнопкой. Если сессия уже идёт — возвращаемся в неё.
+// «Начать» в день по плану, «Начать сейчас» вне плана, «Вернуться» если уже идёт.
+for (const name of ["Вернуться к тренировке", "Начать", "Начать сейчас"]) {
+  const button = page.getByRole("button", { name, exact: true }).first();
+  if (await button.isVisible().catch(() => false)) {
+    await button.click();
+    break;
+  }
+}
 await page.waitForURL(/\/workout\/\d+/, { timeout: 15000 });
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${dir}/shot-07-workout.png`, fullPage: true });

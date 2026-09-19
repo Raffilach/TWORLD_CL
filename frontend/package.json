@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "e2e": "node e2e/smoke.mjs",
-    "e2e:workout": "node e2e/workout.mjs"
+    "e2e:workout": "node e2e/workout.mjs",
+    "e2e:screens": "node e2e/screens.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",

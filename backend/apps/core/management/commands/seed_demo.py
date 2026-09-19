@@ -467,7 +467,7 @@ class Command(BaseCommand):
                 user=user, template=active, gym=gym, date=day,
                 started_at=self._dt(day, 18, random.randint(0, 30)),
                 status=WorkoutSession.Status.COMPLETED,
-                wellbeing_1_10=random.randint(3, 5) if bad_sleep else random.randint(6, 9),
+                wellbeing_1_10=self._wellbeing(user, day),
                 is_training_while_injured=offset >= DAYS - 9 and random.random() < 0.5,
                 notes="Сил не было совсем." if bad_sleep else "",
             )
@@ -513,6 +513,21 @@ class Command(BaseCommand):
             )
             session.save()
             session.recalculate()
+
+    def _wellbeing(self, user, day) -> int:
+        """Самочувствие следует за сном накануне.
+
+        Связь заложена в демо-данные намеренно: именно её показывает
+        график «сон → самочувствие в зале», и без неё на нём нечего смотреть.
+        """
+        night = SleepEntry.objects.filter(
+            user=user, night_of=day - timedelta(days=1)
+        ).first()
+        if night is None or night.duration_minutes is None:
+            return random.randint(5, 8)
+        hours = night.duration_minutes / 60
+        base = 2 + (hours - 4) * 1.5          # 4 ч → 2/10, 8 ч → 8/10
+        return max(1, min(10, round(base + random.uniform(-0.8, 0.8))))
 
     def _sets(self, user, entry, item, offset, bad_sleep):
         exercise = entry.exercise

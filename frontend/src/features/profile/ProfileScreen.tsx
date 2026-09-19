@@ -4,6 +4,7 @@ import { useAuth } from "../../app/auth";
 import { api, ApiError } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
 import { Avatar } from "./Avatar";
+import { NotificationSettings } from "./NotificationSettings";
 import { Button, Card, Chip, Empty, Notice } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 
@@ -173,6 +174,26 @@ export function ProfileScreen() {
             }
           />
         </label>
+      </Card>
+
+      <NotificationSettings />
+
+      <Card title="Приватность">
+        <div className="row row--between">
+          <span>
+            Пин-код на дневник
+            <br />
+            <span className="tiny">
+              Записи дневника не попадают в выгрузку для ИИ без явного согласия.
+            </span>
+          </span>
+          <Chip
+            pressed={settings.diary_lock_enabled}
+            onClick={() => void patchSettings({ diary_lock_enabled: !settings.diary_lock_enabled })}
+          >
+            {settings.diary_lock_enabled ? "вкл" : "выкл"}
+          </Chip>
+        </div>
       </Card>
 
       <Card title="Тема">

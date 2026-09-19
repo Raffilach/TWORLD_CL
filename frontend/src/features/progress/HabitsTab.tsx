@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { api } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
 import type { Habit } from "../../shared/api/types";
-import { Card, Empty, Loading } from "../../shared/ui/primitives";
+import { Button, Card, Empty, Loading } from "../../shared/ui/primitives";
+import { CravingSheet } from "../habits/CravingSheet";
+import { SosSheet } from "../habits/SosSheet";
 
 interface Patterns {
   samples: number;
@@ -19,6 +22,7 @@ interface Patterns {
 const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
 export function HabitsTab() {
+  const [sheet, setSheet] = useState<null | "craving" | "sos">(null);
   const habits = useList<Habit>(["habits"], "/habits/");
   const patterns = useQuery({
     queryKey: ["craving-patterns"],
@@ -31,6 +35,13 @@ export function HabitsTab() {
 
   return (
     <>
+      <div className="row row--wrap" style={{ marginBottom: "var(--space-3)" }}>
+        <Button onClick={() => setSheet("craving")}>Отметить тягу</Button>
+        <Button variant="primary" onClick={() => setSheet("sos")}>
+          SOS
+        </Button>
+      </div>
+
       {habits.data?.map((habit) => (
         <Card key={habit.id} title={habit.name}>
           <div className="row row--between">
@@ -117,6 +128,14 @@ export function HabitsTab() {
           </div>
         </Card>
       )}
+
+      <CravingSheet
+        open={sheet === "craving"}
+        habits={habits.data ?? []}
+        onClose={() => setSheet(null)}
+        onSaved={() => void patterns.refetch()}
+      />
+      <SosSheet open={sheet === "sos"} onClose={() => setSheet(null)} />
     </>
   );
 }

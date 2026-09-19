@@ -1,8 +1,7 @@
 import {
   Area,
-  AreaChart,
   CartesianGrid,
-  Legend,
+  ComposedChart,
   Line,
   LineChart,
   ReferenceLine,
@@ -25,6 +24,7 @@ import type { ReactNode } from "react";
  * для самобичевания.
  */
 const AXIS = { stroke: "var(--chart-axis)", fontSize: 11 };
+const NO_ANIMATION = { isAnimationActive: false } as const;
 
 export interface EventMark {
   date: string;
@@ -75,14 +75,24 @@ export function WeightTrendChart({
         <>
           <LegendSwatch color="var(--chart-trend)" label="тренд (7 дней)" />
           <LegendSwatch color="var(--chart-raw)" label="сырой вес" />
-          {events.length > 0 && <LegendSwatch color="var(--chart-event)" label="события" />}
+          {events.map((event) => (
+            <span key={`${event.date}-${event.title}`}>
+              <i className="chart-legend__swatch" style={{ background: "var(--chart-event)" }} />
+              {shortDate(event.date)} {event.title}
+            </span>
+          ))}
         </>
       }
     >
-      <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+      <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
         <XAxis dataKey="date" tick={AXIS} tickFormatter={shortDate} minTickGap={28} />
-        <YAxis tick={AXIS} domain={["dataMin - 1", "dataMax + 1"]} width={44} />
+        <YAxis
+          tick={AXIS}
+          domain={["dataMin - 1", "dataMax + 1"]}
+          width={46}
+          tickFormatter={(value: number) => value.toFixed(1)}
+        />
         <Tooltip {...tooltipProps} />
         {events.map((event) => (
           <ReferenceLine
@@ -90,7 +100,6 @@ export function WeightTrendChart({
             x={event.date}
             stroke="var(--chart-event)"
             strokeDasharray="3 3"
-            label={{ value: event.title, position: "top", fontSize: 10, fill: "var(--chart-event)" }}
           />
         ))}
         <Line
@@ -100,6 +109,7 @@ export function WeightTrendChart({
           strokeWidth={1}
           dot={{ r: 1.5, fill: "var(--chart-raw)" }}
           connectNulls
+          {...NO_ANIMATION}
           name="сырой"
         />
         <Line
@@ -109,6 +119,7 @@ export function WeightTrendChart({
           strokeWidth={2.5}
           dot={false}
           connectNulls
+          {...NO_ANIMATION}
           name="тренд"
         />
       </LineChart>
@@ -140,13 +151,19 @@ export function SleepVsWellbeingChart({
         </>
       }
     >
-      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -12 }}>
         <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
         <XAxis dataKey="date" tick={AXIS} tickFormatter={shortDate} minTickGap={28} />
-        <YAxis yAxisId="left" tick={AXIS} width={30} domain={[0, 12]} />
-        <YAxis yAxisId="right" orientation="right" tick={AXIS} width={24} domain={[0, 10]} />
+        <YAxis yAxisId="left" tick={AXIS} width={34} domain={[0, 12]} allowDecimals={false} />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          tick={AXIS}
+          width={28}
+          domain={[0, 10]}
+          allowDecimals={false}
+        />
         <Tooltip {...tooltipProps} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
         <Area
           yAxisId="left"
           type="monotone"
@@ -155,6 +172,7 @@ export function SleepVsWellbeingChart({
           stroke="var(--chart-1)"
           fill="var(--chart-5)"
           connectNulls
+          {...NO_ANIMATION}
         />
         <Line
           yAxisId="right"
@@ -163,10 +181,11 @@ export function SleepVsWellbeingChart({
           name="самочувствие"
           stroke="var(--chart-3)"
           strokeWidth={2}
-          dot={{ r: 3 }}
+          dot={{ r: 3, fill: "var(--chart-3)" }}
           connectNulls
+          {...NO_ANIMATION}
         />
-      </AreaChart>
+      </ComposedChart>
     </ChartFrame>
   );
 }
@@ -184,10 +203,10 @@ export function SimpleLineChart({
 }) {
   return (
     <ChartFrame height={180}>
-      <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+      <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
         <XAxis dataKey="date" tick={AXIS} tickFormatter={shortDate} minTickGap={28} />
-        <YAxis tick={AXIS} width={40} />
+        <YAxis tick={AXIS} width={44} />
         <Tooltip {...tooltipProps} />
         {events.map((event) => (
           <ReferenceLine
@@ -205,6 +224,7 @@ export function SimpleLineChart({
           strokeWidth={2}
           dot={{ r: 2 }}
           connectNulls
+          {...NO_ANIMATION}
         />
       </LineChart>
     </ChartFrame>
@@ -234,7 +254,7 @@ export function CorrelationScatter({
         <YAxis type="number" dataKey="y" name={yLabel} tick={AXIS} width={40} />
         <ZAxis range={[40, 40]} />
         <Tooltip {...tooltipProps} cursor={{ strokeDasharray: "3 3" }} />
-        <Scatter data={points} fill="var(--chart-2)" />
+        <Scatter data={points} fill="var(--chart-2)" {...NO_ANIMATION} />
       </ScatterChart>
     </ChartFrame>
   );

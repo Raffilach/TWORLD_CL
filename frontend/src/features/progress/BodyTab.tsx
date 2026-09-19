@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { api } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
 import { WeightTrendChart } from "../../shared/ui/charts";
-import { Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { MeasurementSheet } from "../body/MeasurementSheet";
+import { PhotoSheet } from "../body/PhotoSheet";
+import { ScanSheet } from "../body/ScanSheet";
 
 interface TrendResponse {
   summary: {
@@ -51,6 +55,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 export function BodyTab() {
+  const [sheet, setSheet] = useState<null | "measure" | "scan" | "photo">(null);
   const trend = useQuery({
     queryKey: ["weight-trend"],
     queryFn: () => api.get<TrendResponse>("/body/weight/trend/"),
@@ -95,7 +100,14 @@ export function BodyTab() {
         )}
       </Card>
 
-      <Card title="Обхваты">
+      <Card
+        title="Обхваты"
+        action={
+          <button type="button" className="card__action" onClick={() => setSheet("measure")}>
+            Записать
+          </button>
+        }
+      >
         {measurements.data?.items.length ? (
           <>
             <ul className="list">
@@ -119,7 +131,14 @@ export function BodyTab() {
         )}
       </Card>
 
-      <Card title="Состав тела">
+      <Card
+        title="Состав тела"
+        action={
+          <button type="button" className="card__action" onClick={() => setSheet("scan")}>
+            Внести
+          </button>
+        }
+      >
         {scans.data?.points.length ? (
           <>
             <ul className="list">
@@ -166,6 +185,26 @@ export function BodyTab() {
           <Empty>Данных анализатора состава тела пока нет.</Empty>
         )}
       </Card>
+
+      <Card title="Прогресс-фото">
+        <p className="tiny" style={{ marginBottom: "var(--space-2)" }}>
+          Контур в кадре помогает встать так же, как в прошлый раз — без этого
+          сравнение «до/после» мало что показывает.
+        </p>
+        <Button onClick={() => setSheet("photo")}>Сделать снимок</Button>
+      </Card>
+
+      <MeasurementSheet
+        open={sheet === "measure"}
+        onClose={() => setSheet(null)}
+        onSaved={() => void measurements.refetch()}
+      />
+      <ScanSheet
+        open={sheet === "scan"}
+        onClose={() => setSheet(null)}
+        onSaved={() => void scans.refetch()}
+      />
+      <PhotoSheet open={sheet === "photo"} onClose={() => setSheet(null)} onSaved={() => undefined} />
     </>
   );
 }

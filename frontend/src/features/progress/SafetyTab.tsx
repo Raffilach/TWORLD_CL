@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { api } from "../../shared/api/client";
-import { Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { InjurySheet } from "../safety/InjurySheet";
+import { WeightLimitSheet } from "../safety/WeightLimitSheet";
 
 interface SafetyOverview {
   active_injuries: {
@@ -17,7 +20,9 @@ interface SafetyOverview {
 }
 
 export function SafetyTab() {
-  const { data, isLoading } = useQuery({
+  const [injuryOpen, setInjuryOpen] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["safety"],
     queryFn: () => api.get<SafetyOverview>("/safety/"),
   });
@@ -26,6 +31,13 @@ export function SafetyTab() {
 
   return (
     <>
+      <div className="row row--wrap" style={{ marginBottom: "var(--space-3)" }}>
+        <Button variant="primary" onClick={() => setInjuryOpen(true)}>
+          Отметить травму
+        </Button>
+        <Button onClick={() => setLimitOpen(true)}>Добавить лимит веса</Button>
+      </div>
+
       {data.recurrence_notices.map((notice) => (
         <div key={notice.id} style={{ marginBottom: "var(--space-3)" }}>
           <Notice>{notice.message}</Notice>
@@ -75,6 +87,17 @@ export function SafetyTab() {
           запись: решение остаётся за тобой.
         </p>
       </Card>
+
+      <InjurySheet
+        open={injuryOpen}
+        onClose={() => setInjuryOpen(false)}
+        onSaved={() => void refetch()}
+      />
+      <WeightLimitSheet
+        open={limitOpen}
+        onClose={() => setLimitOpen(false)}
+        onSaved={() => void refetch()}
+      />
     </>
   );
 }
