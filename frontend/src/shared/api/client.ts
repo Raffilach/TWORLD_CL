@@ -147,6 +147,13 @@ export async function request<T = unknown>(
   return (await response.json()) as T;
 }
 
+/** Обновить access-токен заранее, до первых запросов после старта. */
+export async function ensureAccessToken(): Promise<boolean> {
+  if (accessToken) return true;
+  if (!auth.refresh) return false;
+  return refreshAccess();
+}
+
 export const api = {
   get: <T>(path: string, query?: RequestOptions["query"]) =>
     request<T>(path, { method: "GET", query }),

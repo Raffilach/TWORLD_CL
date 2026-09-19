@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-import { api, auth as tokens } from "../shared/api/client";
+import { api, auth as tokens, ensureAccessToken } from "../shared/api/client";
 import type { User, UserSettings } from "../shared/api/types";
 import { cacheGet, cacheSet } from "../shared/offline/db";
 
@@ -53,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (tokens.refresh) {
         try {
+          // Сначала обмениваем refresh на access — иначе каждый запрос
+          // стартового экрана сперва получит 401 и пойдёт на второй круг.
+          await ensureAccessToken();
           await loadProfile();
         } catch {
           if (!cachedUser) tokens.clear();
