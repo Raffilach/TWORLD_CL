@@ -71,7 +71,13 @@ export function WeightBlock({
   };
 
   const trend = data.trend_kg ? Number(data.trend_kg).toFixed(1) : null;
-  const change = data.change_7d !== null ? Number(data.change_7d) : null;
+  const raw = data.raw_kg ? Number(data.raw_kg).toFixed(1) : null;
+  // Тренда ещё нет (одно-два взвешивания) — показываем само значение.
+  const shown = trend ?? raw;
+  const change =
+    data.change_7d !== null && data.change_7d !== undefined && Number.isFinite(Number(data.change_7d))
+      ? Number(data.change_7d)
+      : null;
   const previous = data.placeholder_kg ? Number(data.placeholder_kg).toFixed(1) : null;
 
   return (
@@ -90,7 +96,7 @@ export function WeightBlock({
           </span>
           <span className="row" style={{ alignItems: "baseline", marginTop: "var(--space-2)", gap: "var(--space-3)" }}>
             <span className="hero-number">
-              {trend ?? "—"}
+              {shown ?? "—"}
               <span className="unit"> кг</span>
             </span>
             {change !== null && (

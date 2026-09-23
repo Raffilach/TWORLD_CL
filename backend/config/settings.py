@@ -55,6 +55,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -112,6 +113,14 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", BASE_DIR / "media"))
+
+STORAGES = {
+    # Личные загрузки — под случайными именами, см. apps/core/storage.py.
+    "default": {"BACKEND": "apps.core.storage.RandomNameStorage"},
+    # Статика админки отдаётся самим Django через WhiteNoise:
+    # отдельный том и правило в веб-сервере не нужны.
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -131,6 +140,16 @@ REST_FRAMEWORK = {
     # Параметр ?format= у нас означает формат выгрузки (json/csv/markdown),
     # а не выбор рендерера DRF — иначе /api/context/?format=markdown даёт 404.
     "URL_FORMAT_OVERRIDE": None,
+    # Лимиты на анонимные точки входа: перебор паролей и массовая
+    # регистрация. Считаются по IP (за прокси — см. NUM_PROXIES).
+    # В разработке лимиты мягкие: e2e-прогоны логинятся десятки раз подряд.
+    "DEFAULT_THROTTLE_RATES": {
+        "auth_login": os.getenv("THROTTLE_LOGIN", "300/min" if DEBUG else "10/min"),
+        "auth_register": os.getenv("THROTTLE_REGISTER", "300/min" if DEBUG else "10/hour"),
+        "auth_reset": os.getenv("THROTTLE_RESET", "300/min" if DEBUG else "5/hour"),
+        "username_check": os.getenv("THROTTLE_USERNAME_CHECK", "600/min" if DEBUG else "60/min"),
+    },
+    "NUM_PROXIES": int(os.getenv("NUM_PROXIES", "0")) or None,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
     if not DEBUG
@@ -189,7 +208,17 @@ EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@tworld.local")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "25"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+# Закрытая бета: регистрация только по коду приглашения.
+# Коды создаются в профиле администратора или командой `manage.py invites`.
+REGISTRATION_INVITE_ONLY = env_bool("REGISTRATION_INVITE_ONLY", False)
 
 # Web-push. Без ключей уведомления просто не отправляются,
 # всё остальное приложение работает как обычно.
@@ -205,3 +234,9 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    if SECRET_KEY == "dev-insecure-change-me":
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY не задан: в продакшне ключ по умолчанию нельзя.")

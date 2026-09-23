@@ -10,6 +10,10 @@ psycopg2-binary==2.9.13
 Pillow==12.3.0
 python-dotenv==1.2.3
 
+# Продакшн: сервер приложений и раздача статики админки.
+gunicorn==26.2.0
+whitenoise==6.12.0
+
 # PDF недельного отчёта. Требует системных Pango и Cairo — они есть
 # в backend/Dockerfile. Без библиотеки отчёт отдаётся печатаемым HTML.
 weasyprint==70.0

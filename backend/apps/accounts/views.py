@@ -8,8 +8,9 @@ from django.db.models.functions import Lower
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from drf_spectacular.types import OpenApiTypes
 from rest_framework.views import APIView
@@ -19,6 +20,7 @@ from apps.core.viewsets import OwnedModelViewSet, SingletonOwnedView
 from .models import (
     ApiToken,
     FeatureInterest,
+    InviteCode,
     PasswordResetToken,
     Profile,
     ShareLink,
@@ -28,7 +30,9 @@ from .models import (
 from .serializers import (
     ApiTokenSerializer,
     FeatureInterestSerializer,
+    InviteCodeSerializer,
     LoginSerializer,
+    OnboardingSerializer,
     PasswordChangeSerializer,
     ProfileSerializer,
     RegisterSerializer,
@@ -41,6 +45,8 @@ from .validators import suggest_usernames
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_register"
 
     @extend_schema(request=RegisterSerializer, responses=UserSerializer)
     def post(self, request):
@@ -55,6 +61,8 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
 
     @extend_schema(request=LoginSerializer, responses=UserSerializer)
     def post(self, request):
@@ -72,6 +80,7 @@ class LoginView(APIView):
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
 def username_available(request):
     """Проверка занятости ника в реальном времени + подсказки свободных."""
     from django.core.exceptions import ValidationError
@@ -96,6 +105,47 @@ def username_available(request):
         "available": not taken,
         "suggestions": [] if not taken else suggest_usernames(raw, _username_taken),
     })
+
+
+username_available.cls.throttle_scope = "username_check"
+
+
+class RegistrationInfoView(APIView):
+    """Что нужно для регистрации: открыта ли она или только по приглашению."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(responses={200: dict})
+    def get(self, request):
+        return Response({"invite_required": settings.REGISTRATION_INVITE_ONLY})
+
+
+class OnboardingView(APIView):
+    """Стартовый опрос: ответы превращаются в готовые настройки и планы."""
+
+    @extend_schema(request=OnboardingSerializer, responses={200: dict})
+    def post(self, request):
+        from .onboarding import apply_onboarding, skip_onboarding
+
+        if request.data.get("skip"):
+            skip_onboarding(request.user)
+            return Response({"skipped": True})
+        serializer = OnboardingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        summary = apply_onboarding(request.user, serializer.validated_data, serializer.data)
+        return Response(summary)
+
+
+class InviteCodeViewSet(viewsets.ModelViewSet):
+    """Коды приглашений на бету. Только для администратора."""
+
+    permission_classes = [IsAdminUser]
+    serializer_class = InviteCodeSerializer
+    queryset = InviteCode.objects.all().prefetch_related("redemptions__user")
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def perform_create(self, serializer):
+        serializer.save(code=InviteCode.generate_code(), created_by=self.request.user)
 
 
 def _username_taken(candidate: str) -> bool:
@@ -138,6 +188,8 @@ class PasswordChangeView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_reset"
 
     @extend_schema(request=None, responses={202: None})
     def post(self, request):
@@ -163,6 +215,8 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_reset"
 
     @extend_schema(request=None, responses={204: None})
     def post(self, request):

@@ -22,6 +22,7 @@ export interface RegisterPayload {
   phone?: string;
   password: string;
   display_name?: string;
+  invite_code?: string;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);

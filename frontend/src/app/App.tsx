@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import { UndoProvider } from "../shared/hooks/useUndo";
 import { startAutoSync } from "../shared/offline/queue";
@@ -13,6 +13,7 @@ import { TemplateScreen } from "../features/training/TemplateScreen";
 import { ExerciseScreen } from "../features/training/ExerciseScreen";
 import { SessionScreen } from "../features/training/SessionScreen";
 import { FriendsScreen } from "../features/friends/FriendsScreen";
+import { OnboardingScreen } from "../features/onboarding/OnboardingScreen";
 
 // Экран с графиками грузится отдельно: главный экран должен открываться
 // мгновенно даже на медленном соединении.
@@ -39,7 +40,7 @@ const queryClient = new QueryClient({
 });
 
 function Routing() {
-  const { user, loading } = useAuth();
+  const { user, settings, loading } = useAuth();
 
   if (loading) {
     return (
@@ -49,6 +50,10 @@ function Routing() {
     );
   }
   if (!user) return <AuthScreen />;
+
+  // Новый аккаунт — сначала стартовый опрос. Строгое сравнение с null:
+  // у старого оффлайн-кэша поля нет вовсе, и опрос ему не показываем.
+  if (settings?.onboarding_completed_at === null) return <OnboardingScreen />;
 
   return (
     <Routes>
@@ -69,9 +74,16 @@ function Routing() {
         <Route path="/profile" element={<ProfileScreen />} />
       </Route>
       <Route path="/workout/:id" element={<SessionScreen />} />
+      <Route path="/onboarding" element={<OnboardingRoute />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
+}
+
+/** Повторный опрос из профиля: по завершении — на «Сегодня». */
+function OnboardingRoute() {
+  const navigate = useNavigate();
+  return <OnboardingScreen onDone={() => navigate("/")} />;
 }
 
 export function App() {

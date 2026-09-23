@@ -13,9 +13,23 @@ interface UsernameCheck {
   suggestions: string[];
 }
 
+/** Код из ссылки-приглашения: tworld.app/?invite=ABCD-EFGH. */
+function inviteFromUrl(): string {
+  try {
+    return new URLSearchParams(window.location.search).get("invite") ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export function AuthScreen() {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
+  const [inviteCode, setInviteCode] = useState(inviteFromUrl);
+  // Пришёл по приглашению — значит, аккаунта ещё нет: сразу регистрация.
+  const [mode, setMode] = useState<"login" | "register" | "reset">(
+    inviteFromUrl() ? "register" : "login",
+  );
+  const [inviteRequired, setInviteRequired] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -25,6 +39,13 @@ export function AuthScreen() {
   const [contact, setContact] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [check, setCheck] = useState<UsernameCheck | null>(null);
+
+  useEffect(() => {
+    api
+      .get<{ invite_required: boolean }>("/auth/registration/")
+      .then((info) => setInviteRequired(info.invite_required))
+      .catch(() => setInviteRequired(false));
+  }, []);
 
   // Проверка занятости ника в реальном времени с подсказками свободных.
   useEffect(() => {
@@ -61,9 +82,12 @@ export function AuthScreen() {
           username,
           password,
           display_name: displayName || undefined,
+          invite_code: inviteCode.trim() || undefined,
           email: isEmail ? contact : undefined,
           phone: isEmail ? undefined : contact,
         });
+        // Код из ссылки больше не нужен — убираем его из адресной строки.
+        if (window.location.search) window.history.replaceState(null, "", "/");
       }
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.firstMessage : "Что-то пошло не так");
@@ -111,6 +135,24 @@ export function AuthScreen() {
           </label>
         ) : (
           <>
+            {(inviteRequired || inviteCode) && (
+              <label className="field">
+                <span className="field__label">Код приглашения</span>
+                <input
+                  value={inviteCode}
+                  onChange={(event) => setInviteCode(event.target.value.toUpperCase())}
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="ABCD-EFGH"
+                  required={inviteRequired}
+                />
+                <span className="field__hint">
+                  Сейчас идёт закрытая бета — код присылает автор приложения.
+                </span>
+              </label>
+            )}
+
             <label className="field">
               <span className="field__label">Ник</span>
               <input

@@ -14,7 +14,8 @@
     "e2e:flows": "node e2e/create-flows.mjs",
     "e2e:offline": "node e2e/offline.mjs",
     "e2e:pwa": "node e2e/offline-pwa.mjs",
-    "e2e:appearance": "node e2e/appearance.mjs"
+    "e2e:appearance": "node e2e/appearance.mjs",
+    "e2e:onboarding": "node e2e/onboarding.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.7",

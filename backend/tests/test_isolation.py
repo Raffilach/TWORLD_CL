@@ -1,6 +1,7 @@
 """Изоляция данных между пользователями — на уровне запросов, не UI."""
 import pytest
 from django.urls import get_resolver
+from rest_framework.permissions import IsAdminUser
 from rest_framework.test import APIClient
 
 from apps.core.viewsets import OwnedModelViewSet, ReadOnlyCatalogViewSet, SingletonOwnedView
@@ -30,6 +31,8 @@ PUBLIC_OR_SHARED = {
     "api/auth/register/", "api/auth/login/", "api/auth/refresh/",
     "api/auth/password/reset/", "api/auth/password/reset/confirm/",
     "api/accounts/username-available/", "api/schema/", "api/docs/",
+    # Отвечает только «нужен ли код приглашения» — данных пользователей нет.
+    "api/auth/registration/",
 }
 
 
@@ -54,6 +57,10 @@ def test_owned_viewsets_filter_by_user():
         if cls is None:
             continue
         if issubclass(cls, (ReadOnlyCatalogViewSet, SingletonOwnedView)):
+            continue
+        # Общие объекты администратора (коды приглашений): у них нет
+        # владельца, зато доступ закрыт правом администратора.
+        if IsAdminUser in getattr(cls, "permission_classes", []):
             continue
         if not hasattr(cls, "queryset") or cls.queryset is None:
             continue

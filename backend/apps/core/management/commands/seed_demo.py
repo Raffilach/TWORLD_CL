@@ -108,6 +108,7 @@ class Command(BaseCommand):
             user=user, protein_target_g=160, water_target_ml=2500,
             bedtime_goal=time(23, 30), wake_goal=time(7, 0),
             commute_home_minutes=60, wind_down_minutes=60, free_meal_weekday=5,
+            onboarding_completed_at=timezone.now(),
         )
         NotificationSettings.objects.create(user=user)
         return user

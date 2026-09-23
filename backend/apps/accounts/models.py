@@ -39,7 +39,16 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email=None, phone=None, password=None, **extra):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
-        return self._create(username, email, phone, password, **extra)
+        user = self._create(username, email, phone, password, **extra)
+        # Регистрация через API создаёт профиль и настройки сама, а
+        # `createsuperuser` идёт мимо неё — без этого админ не смог бы
+        # пользоваться приложением как обычный человек.
+        from apps.notify.models import NotificationSettings
+
+        Profile.objects.get_or_create(user=user)
+        UserSettings.objects.get_or_create(user=user)
+        NotificationSettings.objects.get_or_create(user=user)
+        return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -65,7 +74,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = []
+    # Email спрашивает `createsuperuser`: без email или телефона аккаунт
+    # не создаётся (ограничение в базе).
+    REQUIRED_FIELDS = ["email"]
 
     class Meta:
         constraints = [
@@ -212,6 +223,11 @@ class UserSettings(TimeStampedModel):
     diary_pin_hash = models.CharField(max_length=128, blank=True)
     diary_biometric = models.BooleanField(default=False)
 
+    # Пройден ли стартовый опрос. У пустого значения экран опроса
+    # показывается сразу после входа; «Пропустить» тоже его заполняет.
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
+    onboarding_answers = models.JSONField(default=dict, blank=True)
+
     week_starts_on = models.PositiveSmallIntegerField(default=1)
     theme = models.CharField(
         max_length=8,
@@ -337,3 +353,65 @@ class PasswordResetToken(OwnedModel):
     @property
     def is_valid(self) -> bool:
         return self.used_at is None and self.expires_at > timezone.now()
+
+
+class InviteCode(TimeStampedModel):
+    """Код приглашения на закрытую бету.
+
+    Регистрация по кодам включается переменной REGISTRATION_INVITE_ONLY.
+    Код многоразовый, если так задано: `max_uses` — сколько аккаунтов
+    по нему можно создать, `used_count` — сколько уже создано.
+    """
+
+    code = models.CharField(max_length=32, unique=True, blank=True)
+    note = models.CharField("для кого", max_length=120, blank=True)
+    max_uses = models.PositiveIntegerField(default=1)
+    used_count = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.code
+
+    # Без похожих символов: 0/O, 1/I/L — код диктуют голосом и перепечатывают.
+    ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+
+    @classmethod
+    def generate_code(cls) -> str:
+        while True:
+            raw = "".join(secrets.choice(cls.ALPHABET) for _ in range(8))
+            code = f"{raw[:4]}-{raw[4:]}"
+            if not cls.objects.filter(code=code).exists():
+                return code
+
+    @staticmethod
+    def normalize(value: str) -> str:
+        cleaned = "".join(ch for ch in (value or "").upper() if ch.isalnum())
+        return f"{cleaned[:4]}-{cleaned[4:]}" if len(cleaned) == 8 else (value or "").strip().upper()
+
+    @property
+    def uses_left(self) -> int:
+        return max(0, self.max_uses - self.used_count)
+
+    @property
+    def is_usable(self) -> bool:
+        if not self.is_active or self.uses_left == 0:
+            return False
+        return not (self.expires_at and self.expires_at < timezone.now())
+
+
+class InviteRedemption(models.Model):
+    """Кто и когда зарегистрировался по коду — для статистики беты."""
+
+    invite = models.ForeignKey(InviteCode, on_delete=models.CASCADE, related_name="redemptions")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="invite_redemption")
+    redeemed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-redeemed_at"]

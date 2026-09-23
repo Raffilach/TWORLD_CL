@@ -14,6 +14,7 @@ export interface User {
   initials: string;
   date_joined: string;
   profile: Profile | null;
+  is_staff: boolean;
 }
 
 export interface Profile {
@@ -59,6 +60,8 @@ export interface UserSettings {
   week_starts_on: number;
   theme: "auto" | "light" | "dark";
   leave_gym_by: string;
+  onboarding_completed_at: string | null;
+  onboarding_answers: Record<string, unknown>;
 }
 
 export interface Exercise {

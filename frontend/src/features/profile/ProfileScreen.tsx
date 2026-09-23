@@ -10,6 +10,7 @@ import {
 } from "../../shared/ui/appearance";
 import { NotificationSettings } from "./NotificationSettings";
 import { Avatar } from "./Avatar";
+import { InvitesPanel } from "./InvitesPanel";
 import { PersonalCard } from "./PersonalCard";
 import { useHeaderAction } from "../../app/header";
 import { Icon } from "../../shared/ui/icons";
@@ -45,7 +46,8 @@ type Section =
   | "privacy"
   | "ai"
   | "links"
-  | "data";
+  | "data"
+  | "invites";
 
 /**
  * Профиль — меню, а не простыня настроек: каждая группа открывается
@@ -141,6 +143,25 @@ export function ProfileScreen() {
         <ListRow icon="dumbbell" title="Тренировки" onClick={() => setSection("training")} />
         <ListRow icon="bell" title="Уведомления" onClick={() => setSection("notifications")} />
         <ListRow icon="palette" title="Внешний вид" value={THEME_LABELS[settings.theme] ?? ""} onClick={() => setSection("appearance")} />
+      </div>
+
+      <div className="card menu">
+        <ListRow
+          icon="sparkle"
+          tone="blue"
+          title="Пройти настройку заново"
+          subtitle="Цели, программа, привычки — по короткому опросу"
+          to="/onboarding"
+        />
+        {user.is_staff && (
+          <ListRow
+            icon="users"
+            tone="purple"
+            title="Пригласить тестеров"
+            subtitle="Коды и ссылки на закрытую бету"
+            onClick={() => setSection("invites")}
+          />
+        )}
       </div>
 
       <div className="card menu">
@@ -368,6 +389,10 @@ export function ProfileScreen() {
         </Button>
       </div>
       {planResult && <p className="muted" style={{ marginTop: "var(--space-2)" }}>{planResult}</p>}
+      </Sheet>
+
+      <Sheet open={section === "invites"} onClose={close} title="Пригласить тестеров">
+        {section === "invites" && <InvitesPanel />}
       </Sheet>
 
       <Sheet open={section === "links"} onClose={close} title="Публичные ссылки">

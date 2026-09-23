@@ -1,0 +1,85 @@
+# Продакшн: закрытая бета на одном сервере.
+#
+#   cp .env.prod.example .env.prod   # заполнить
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Подробно — в DEPLOY.md.
+
+x-backend-common: &backend-common
+  image: tworld-backend:latest
+  restart: unless-stopped
+  env_file: .env.prod
+  environment:
+    POSTGRES_HOST: db
+    DJANGO_DEBUG: "False"
+    DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
+    DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}
+    CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+    FRONTEND_URL: https://${DOMAIN}
+    MEDIA_ROOT: /app/media
+    NUM_PROXIES: "1"
+    # Внутри сети контейнеров HTTP; HTTPS снаружи держит Caddy.
+    SECURE_SSL_REDIRECT: "False"
+  volumes:
+    - media:/app/media
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tworld}
+      POSTGRES_USER: ${POSTGRES_USER:-tworld}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в .env.prod}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tworld}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Порт наружу не открыт: база доступна только контейнерам.
+
+  backend:
+    <<: *backend-common
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["/deploy/backend-entrypoint.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Напоминания (web-push): раз в 5 минут, как cron из README.
+  # Тот же образ, что у бэкенда, — второй раз не собирается.
+  scheduler:
+    <<: *backend-common
+    command: >
+      sh -c "sleep 60; while true; do python manage.py send_notifications; sleep 300; done"
+    depends_on:
+      - backend
+
+  web:
+    image: tworld-web:latest
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - media:/srv/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
