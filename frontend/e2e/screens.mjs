@@ -31,7 +31,7 @@ await page.waitForSelector(".tabbar");
 await page.getByRole("link", { name: "Прогресс" }).click();
 await page.waitForTimeout(2000);
 
-for (const tab of ["Неделя", "Тело", "Сон", "Питание", "Привычки", "Травмы", "Дневник", "Аналитика", "Отчёт"]) {
+for (const tab of ["Неделя", "Мышцы", "Тело", "Сон", "Питание", "Привычки", "Травмы", "Дневник", "Аналитика", "Отчёт"]) {
   await page.getByRole("button", { name: tab, exact: true }).click();
   await page.waitForTimeout(1400);
   const text = await page.locator(".app__main").innerText();

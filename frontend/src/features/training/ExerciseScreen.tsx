@@ -7,6 +7,7 @@ import { useList } from "../../shared/api/hooks";
 import type { Exercise, Gym, GymExerciseProfile } from "../../shared/api/types";
 import { Button, Card, Chip, Empty, Loading, Notice } from "../../shared/ui/primitives";
 import { SimpleLineChart } from "../../shared/ui/charts";
+import { ExerciseMusclesCard } from "../musclemap/cards";
 
 interface HistoryPoint {
   date: string;
@@ -96,6 +97,11 @@ export function ExerciseScreen() {
           <Notice tone={hint.kind === "increase" ? "info" : "warn"}>{hint.message}</Notice>
         </div>
       ))}
+
+      <ExerciseMusclesCard
+        name={exercise.name}
+        coarse={exercise.muscle_links.map((link) => ({ name: link.muscle_name, role: link.role }))}
+      />
 
       <Card title="История">
         {chartData.length > 1 ? (

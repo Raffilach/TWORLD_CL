@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../shared/api/client";
 import type { TemplateBlock, WorkoutTemplate } from "../../shared/api/types";
 import { Button, Card, Empty, Loading, Notice } from "../../shared/ui/primitives";
+import { WorkoutLoadCard } from "../musclemap/cards";
 import { AddExerciseSheet, ExclusionSheet } from "./TemplateEditor";
 
 /**
@@ -140,6 +141,14 @@ export function TemplateScreen() {
           </div>
         </Card>
       ))}
+
+      <WorkoutLoadCard
+        title="Какие мышцы нагружает"
+        hint="По плановым подходам всех блоков. Если какая-то крупная мышца серая — программе чего-то не хватает."
+        rows={template.blocks.flatMap((block) =>
+          block.exercises.map((item) => ({ name: item.exercise_name, sets: item.target_sets })),
+        )}
+      />
 
       <Card
         title="Сегодня не делаем"

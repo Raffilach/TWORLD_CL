@@ -140,3 +140,79 @@ class InsightViewSet(OwnedModelViewSet):
     serializer_class = s.InsightSerializer
     queryset = m.Insight.objects.all()
     http_method_names = ["get", "head", "options"]
+
+
+@extend_schema(responses={200: OpenApiTypes.OBJECT})  # schema: ExerciseVolumeView
+class ExerciseVolumeView(APIView):
+    """Рабочие подходы по упражнениям за период или за одну тренировку.
+
+    Сырьё для мышечной карты: сколько рабочих подходов сделано в каждом
+    упражнении и какие мышцы оно нагружает по справочнику. Детальную
+    анатомию (44 мышцы и роли) клиент накладывает сам — сервер отдаёт
+    только факты, одним запросом, без деталей каждой тренировки.
+
+    Разминочные подходы не считаются: они не нагрузка, а подготовка.
+    """
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("from", str, description="Начало периода, по умолчанию — 6 дней назад"),
+            OpenApiParameter("to", str, description="Конец периода, по умолчанию — сегодня"),
+            OpenApiParameter("session", int, description="Только эта тренировка"),
+        ]
+    )
+    def get(self, request):
+        from django.db.models import Count
+
+        from apps.training.models import Exercise, SetLog
+
+        sets = SetLog.objects.filter(
+            user=request.user,
+            is_warmup=False,
+            deleted_at__isnull=True,
+            session_exercise__deleted_at__isnull=True,
+            session_exercise__session__deleted_at__isnull=True,
+        )
+
+        session_id = request.query_params.get("session")
+        if session_id:
+            sets = sets.filter(session_exercise__session_id=session_id)
+            period = None
+        else:
+            today = timezone.localdate()
+            date_from = parse_date(request.query_params.get("from", "")) or today - timedelta(days=6)
+            date_to = parse_date(request.query_params.get("to", "")) or today
+            sets = sets.filter(session_exercise__session__date__range=(date_from, date_to))
+            period = {"from": date_from.isoformat(), "to": date_to.isoformat()}
+
+        rows = list(
+            sets.values("session_exercise__exercise_id").annotate(
+                working_sets=Count("id"),
+                sessions=Count("session_exercise__session_id", distinct=True),
+            )
+        )
+        exercises = {
+            exercise.id: exercise
+            for exercise in Exercise.objects.filter(
+                id__in=[row["session_exercise__exercise_id"] for row in rows]
+            ).prefetch_related("muscle_links__muscle")
+        }
+        payload = []
+        for row in sorted(rows, key=lambda item: -item["working_sets"]):
+            exercise = exercises[row["session_exercise__exercise_id"]]
+            payload.append({
+                "exercise": exercise.id,
+                "name": exercise.name,
+                "is_global": exercise.owner_id is None,
+                "working_sets": row["working_sets"],
+                "sessions": row["sessions"],
+                "muscles": [
+                    {"code": link.muscle.code, "role": link.role}
+                    for link in exercise.muscle_links.all()
+                ],
+            })
+
+        session_count = (
+            sets.values("session_exercise__session_id").distinct().count() if not session_id else 1
+        )
+        return Response({"period": period, "sessions": session_count, "exercises": payload})

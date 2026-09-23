@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Segmented } from "../../shared/ui/primitives";
+import { MuscleLoadTab } from "../musclemap/MuscleLoadTab";
 import { AnalyticsTab } from "./AnalyticsTab";
 import { BodyTab } from "./BodyTab";
 import { HabitsTab } from "./HabitsTab";
@@ -13,6 +14,7 @@ import { SleepTab } from "./SleepTab";
 
 type Tab =
   | "overview"
+  | "muscles"
   | "body"
   | "sleep"
   | "nutrition"
@@ -24,6 +26,7 @@ type Tab =
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Неделя" },
+  { id: "muscles", label: "Мышцы" },
   { id: "body", label: "Тело" },
   { id: "sleep", label: "Сон" },
   { id: "nutrition", label: "Питание" },
@@ -42,6 +45,7 @@ export function ProgressScreen() {
       <Segmented label="Раздел прогресса" options={TABS} value={tab} onChange={setTab} scroll />
 
       {tab === "overview" && <OverviewTab />}
+      {tab === "muscles" && <MuscleLoadTab />}
       {tab === "body" && <BodyTab />}
       {tab === "sleep" && <SleepTab />}
       {tab === "nutrition" && <NutritionTab />}

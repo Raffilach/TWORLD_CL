@@ -11,6 +11,7 @@ import { Icon } from "../../shared/ui/icons";
 import { Button, IconButton, Loading, Notice, Ring, Scale, StatusDot } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 import { RestTimer, SessionClock } from "../../shared/ui/timers";
+import { WorkoutLoadCard } from "../musclemap/cards";
 import { ExercisePanel } from "./ExercisePanel";
 
 const BLOCK_TITLES: Record<BlockPriority, string> = {
@@ -160,7 +161,18 @@ export function SessionScreen() {
             ),
           )}
 
-          <p className="tiny" style={{ marginTop: "var(--space-5)" }}>
+          <div style={{ marginTop: "var(--space-5)" }}>
+            <WorkoutLoadCard
+              title="Нагрузка на мышцы"
+              hint="По рабочим подходам этой тренировки. Обновляется с каждым подходом."
+              rows={session.exercises.map((item) => ({
+                name: item.exercise_name,
+                sets: item.sets.filter((set) => !set.is_warmup).length,
+              }))}
+            />
+          </div>
+
+          <p className="tiny" style={{ marginTop: "var(--space-3)" }}>
             Тоннаж {Number(session.tonnage_kg).toFixed(0)} кг · рабочих подходов{" "}
             {session.working_sets_count}. Разминочные в тоннаж не идут.
           </p>

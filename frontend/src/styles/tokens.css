@@ -65,6 +65,16 @@
   --ring-to: #34c77b;
   --ring-track: #e7edf6;
 
+  /* --- Мышечная карта: трёхцветная шкала нагрузки и «анатомия» ----------- */
+  --load-none: #e8cfc4;
+  --load-low: #34c77b;
+  --load-mid: #f5c02a;
+  --load-high: #ef5146;
+  --body-skin: #f6e9e1;
+  --body-line: #a07e70;
+  --body-muscle-line: #b38b7d;
+  --body-detail: #c3a194;
+
   /* --- Семантика: спокойная, без «аварийного» красного ------------------- */
   --color-ok: #148a52;
   --color-ok-bg: #e3f7ec;
@@ -233,6 +243,14 @@
     --ring-from: #22d3c5;
     --ring-to: #3ddc84;
     --ring-track: #1f2940;
+    --load-none: #3a3f52;
+    --load-low: #2fbf72;
+    --load-mid: #e8b624;
+    --load-high: #ec5a50;
+    --body-skin: #262c3d;
+    --body-line: #59627c;
+    --body-muscle-line: #4a5270;
+    --body-detail: #4d5673;
 
     --color-ok: #4ade94;
     --color-ok-bg: #133526;
@@ -304,6 +322,14 @@
   --ring-from: #22d3c5;
   --ring-to: #3ddc84;
   --ring-track: #1f2940;
+  --load-none: #3a3f52;
+  --load-low: #2fbf72;
+  --load-mid: #e8b624;
+  --load-high: #ec5a50;
+  --body-skin: #262c3d;
+  --body-line: #59627c;
+  --body-muscle-line: #4a5270;
+  --body-detail: #4d5673;
   --color-ok: #4ade94;
   --color-ok-bg: #133526;
   --color-warn: #fbd168;

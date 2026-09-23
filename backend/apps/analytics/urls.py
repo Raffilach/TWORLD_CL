@@ -16,5 +16,6 @@ urlpatterns = [
     path("analytics/heatmap/", views.HeatmapView.as_view()),
     path("analytics/forecast/", views.ForecastView.as_view()),
     path("analytics/week/", views.WeekMetricsView.as_view()),
+    path("analytics/exercise-volume/", views.ExerciseVolumeView.as_view()),
     path("", include(router.urls)),
 ]
