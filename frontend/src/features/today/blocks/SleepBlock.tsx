@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { api } from "../../../shared/api/client";
 import type { TodayPayload } from "../../../shared/api/types";
-import { Card, Notice } from "../../../shared/ui/primitives";
+import { Card, IconTile, Notice } from "../../../shared/ui/primitives";
 
 function minutesLabel(minutes: number | null) {
   if (minutes === null) return "—";
@@ -57,19 +57,31 @@ export function SleepBlock({
   };
 
   return (
-    <Card
-      title="Сон за прошлую ночь"
-      action={
-        logged ? (
-          <span className="card__action">
-            {minutesLabel(data.last_night.duration_minutes)}
-            {data.last_night.source && data.last_night.source !== "manual" && " · из Health"}
+    <Card className="card--tight">
+      <div className="metric">
+        <IconTile icon="moon" tone="purple" />
+        <div className="metric__body" style={{ gap: 2 }}>
+          <span className="metric__label">
+            Сон
+            {data.last_night.source && data.last_night.source !== "manual" && (
+              <span className="tiny"> · из Health</span>
+            )}
           </span>
-        ) : undefined
-      }
-    >
+          {logged ? (
+            <span className="big-number">{minutesLabel(data.last_night.duration_minutes)}</span>
+          ) : (
+            <span className="tiny">Во сколько лёг и встал — поля уже заполнены привычным</span>
+          )}
+        </div>
+        {logged && data.last_night.bed_time && data.last_night.wake_time && (
+          <span className="tiny" style={{ alignSelf: "flex-end" }}>
+            {clock(data.last_night.bed_time)} — {clock(data.last_night.wake_time)}
+          </span>
+        )}
+      </div>
+
       {!logged && (
-        <div className="row" style={{ gap: "var(--space-3)" }}>
+        <div className="row" style={{ gap: "var(--space-3)", marginTop: "var(--space-2)" }}>
           <label className="field grow">
             <span className="field__label">Отбой</span>
             <input
@@ -104,4 +116,12 @@ export function SleepBlock({
       )}
     </Card>
   );
+}
+
+/** ISO-время или «23:42:00» → «23:42». */
+function clock(value: string) {
+  if (value.includes("T")) {
+    return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  }
+  return value.slice(0, 5);
 }

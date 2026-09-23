@@ -85,7 +85,7 @@ export function BodyTab() {
 
   return (
     <>
-      <Card title="Вес">
+      <Card title="Вес" icon="scale" tone="blue">
         <p className="hero-number">
           {trend.data?.summary.trend_kg ? Number(trend.data.summary.trend_kg).toFixed(1) : "—"}
           <span className="muted" style={{ fontSize: "var(--font-size-lg)" }}> кг тренда</span>
@@ -187,7 +187,7 @@ export function BodyTab() {
         )}
       </Card>
 
-      <Card title="Прогресс-фото">
+      <Card title="Прогресс-фото" icon="camera" tone="pink">
         <p className="tiny" style={{ marginBottom: "var(--space-2)" }}>
           Контур в кадре помогает встать так же, как в прошлый раз — без этого
           сравнение «до/после» мало что показывает.

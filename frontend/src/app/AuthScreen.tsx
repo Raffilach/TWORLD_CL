@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "../shared/api/client";
 import { Button, Notice } from "../shared/ui/primitives";
 import { useAuth } from "./auth";
+import { Icon } from "../shared/ui/icons";
 
 interface UsernameCheck {
   username: string;
@@ -73,12 +74,15 @@ export function AuthScreen() {
 
   return (
     <div className="auth">
-      <h1 style={{ marginBottom: "var(--space-2)" }}>TWORLD</h1>
+      <div className="auth__logo" aria-hidden="true">
+        <Icon name="dumbbell" size={32} strokeWidth={2.2} />
+      </div>
+      <h1 style={{ marginBottom: "var(--space-2)", fontSize: "var(--font-size-3xl)" }}>TWORLD</h1>
       <p className="muted" style={{ marginBottom: "var(--space-5)" }}>
         Тренировки, привычки и дневник — в одном месте.
       </p>
 
-      <form className="stack" onSubmit={submit}>
+      <form className="card stack" onSubmit={submit}>
         {mode === "reset" ? (
           <label className="field">
             <span className="field__label">Email для восстановления</span>

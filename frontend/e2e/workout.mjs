@@ -27,8 +27,8 @@ await page.waitForSelector(".tabbar");
 await page.waitForTimeout(1200);
 
 // Старт тренировки одной кнопкой. Если сессия уже идёт — возвращаемся в неё.
-// «Начать» в день по плану, «Начать сейчас» вне плана, «Вернуться» если уже идёт.
-for (const name of ["Вернуться к тренировке", "Начать", "Начать сейчас"]) {
+// «Начать тренировку» в день по плану, «Начать сейчас» вне плана, «Вернуться» если уже идёт.
+for (const name of ["Вернуться к тренировке", "Начать тренировку", "Начать сейчас"]) {
   const button = page.getByRole("button", { name, exact: true }).first();
   if (await button.isVisible().catch(() => false)) {
     await button.click();

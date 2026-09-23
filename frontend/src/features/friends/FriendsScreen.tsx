@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useAuth } from "../../app/auth";
 import { api } from "../../shared/api/client";
 import { useList } from "../../shared/api/hooks";
-import { Button, Card } from "../../shared/ui/primitives";
+import type { IconName } from "../../shared/ui/icons";
+import { Card, IconButton, IconTile } from "../../shared/ui/primitives";
+import type { Tone } from "../../shared/ui/primitives";
 
 interface FeatureInterest {
   id: number;
@@ -11,20 +13,28 @@ interface FeatureInterest {
   message: string;
 }
 
-const PLANNED = [
+const PLANNED: { title: string; text: string; icon: IconName; tone: Tone }[] = [
   {
+    icon: "chart",
+    tone: "blue",
     title: "Делиться прогрессом",
     text: "Показывать друзьям только то, что выберешь сам: неделю, тренировку или серию привычки.",
   },
   {
+    icon: "flame",
+    tone: "orange",
     title: "Сравнивать серии привычек",
     text: "Видеть, у кого какая серия, и держаться вместе — без рейтингов и очков.",
   },
   {
+    icon: "target",
+    tone: "purple",
     title: "Совместные челленджи",
     text: "Общая цель на несколько человек: километры, тренировки, чистые дни.",
   },
   {
+    icon: "heart",
+    tone: "pink",
     title: "Реакции на тренировки",
     text: "Короткий отклик на чужую тренировку, когда она была тяжёлой.",
   },
@@ -78,73 +88,107 @@ export function FriendsScreen() {
 
   return (
     <>
-      {/* Графический блок: структура есть, оформление — на токенах. */}
-      <svg className="friends-art" viewBox="0 0 280 140" role="img" aria-label="Схема: люди и общий прогресс">
-        <circle cx="70" cy="70" r="26" fill="none" stroke="var(--color-border-strong)" strokeWidth="2" />
-        <circle cx="140" cy="46" r="20" fill="none" stroke="var(--color-border-strong)" strokeWidth="2" />
-        <circle cx="210" cy="70" r="26" fill="none" stroke="var(--color-border-strong)" strokeWidth="2" />
-        <path d="M96 70 H120" stroke="var(--color-border)" strokeWidth="2" strokeDasharray="4 4" />
-        <path d="M160 46 H184" stroke="var(--color-border)" strokeWidth="2" strokeDasharray="4 4" />
-        <path d="M70 96 Q140 130 210 96" fill="none" stroke="var(--color-border)" strokeWidth="2" />
-        <rect x="56" y="58" width="28" height="6" rx="3" fill="var(--color-accent-subtle)" />
-        <rect x="56" y="70" width="18" height="6" rx="3" fill="var(--color-accent-subtle)" />
-        <rect x="196" y="58" width="28" height="6" rx="3" fill="var(--color-accent-subtle)" />
-        <rect x="196" y="70" width="22" height="6" rx="3" fill="var(--color-accent-subtle)" />
-      </svg>
+      <Card className="card--hero">
+        <FriendsArt />
+        <h2 className="center" style={{ fontSize: "var(--font-size-xl)", marginBottom: "var(--space-1)" }}>
+          Друзья появятся здесь
+        </h2>
+        <p className="muted center" style={{ marginBottom: "var(--space-4)" }}>
+          Скоро ты сможешь:
+        </p>
 
-      <h2 style={{ textAlign: "center", marginBottom: "var(--space-2)" }}>
-        Друзья появятся здесь
-      </h2>
-      <p className="muted" style={{ textAlign: "center", marginBottom: "var(--space-5)" }}>
-        Вот что здесь будет.
-      </p>
+        <ul className="feature-list">
+          {PLANNED.map((item) => (
+            <li key={item.title} className="feature-list__item">
+              <IconTile icon={item.icon} tone={item.tone} size="sm" />
+              <span className="grow">
+                <span className="strong">{item.title}</span>
+                <br />
+                <span className="tiny">{item.text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
-      <ul className="feature-list" style={{ marginBottom: "var(--space-5)" }}>
-        {PLANNED.map((item) => (
-          <li key={item.title} className="feature-list__item">
-            <span className="feature-list__marker" aria-hidden="true" />
-            <span>
-              <strong>{item.title}</strong>
-              <br />
-              <span className="muted">{item.text}</span>
+      <Card className={subscribed ? "" : "card--tinted tone-blue"}>
+        <button
+          type="button"
+          className="tile-row"
+          disabled={subscribed}
+          onClick={() => void subscribe()}
+        >
+          <IconTile icon={subscribed ? "check" : "bell"} tone={subscribed ? "green" : "blue"} />
+          <span className="tile-row__text">
+            <span className="tile-row__title" style={{ color: subscribed ? undefined : "var(--color-accent)" }}>
+              {subscribed ? "Сообщим, когда появится" : "Сообщить, когда появится"}
             </span>
-          </li>
-        ))}
-      </ul>
+            <span className="tile-row__meta">
+              Мы напишем, как только функция станет доступна.
+            </span>
+          </span>
+        </button>
+      </Card>
 
-      <Button
-        variant={subscribed ? "default" : "primary"}
-        size="lg"
-        disabled={subscribed}
-        onClick={() => void subscribe()}
-      >
-        {subscribed ? "Сообщим, когда появится" : "Сообщить, когда появится"}
-      </Button>
-
-      <Card title="Твой ник">
+      <Card>
+        <p className="tiny">Твой username</p>
         <div className="row row--between">
-          <span className="big-number">{user?.handle}</span>
-          <Button onClick={() => void copyHandle()}>{copied ? "Скопировано" : "Копировать"}</Button>
+          <span className="big-number" style={{ fontSize: "var(--font-size-xl)" }}>{user?.handle}</span>
+          <IconButton
+            icon={copied ? "check" : "copy"}
+            label={copied ? "Скопировано" : "Копировать ник"}
+            onClick={() => void copyHandle()}
+          />
         </div>
-        <p className="muted" style={{ marginTop: "var(--space-2)" }}>
+        <p className="tiny" style={{ marginTop: "var(--space-1)" }}>
           Когда друзья появятся, тебя найдут по нему.
         </p>
       </Card>
 
-      <Card title="Что ещё было бы полезно">
-        <div className="row" style={{ gap: "var(--space-2)" }}>
+      <Card title="Что ещё добавить?">
+        <div className="input-action">
           <input
-            className="grow"
             value={suggestion}
             placeholder="Например: общий челлендж по шагам"
+            aria-label="Предложение"
             onChange={(event) => setSuggestion(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") void sendSuggestion();
+            }}
           />
-          <Button onClick={() => void sendSuggestion()} aria-label="Отправить предложение">
-            →
-          </Button>
+          <IconButton
+            icon="arrowRight"
+            label="Отправить предложение"
+            variant="primary"
+            onClick={() => void sendSuggestion()}
+          />
         </div>
         {sent && <p className="tiny" style={{ marginTop: "var(--space-2)" }}>Записали, спасибо.</p>}
       </Card>
     </>
+  );
+}
+
+/** Иллюстрация: три «человечка»-пузыря и плюс — на тональных цветах. */
+function FriendsArt() {
+  return (
+    <svg className="friends-art" viewBox="0 0 260 150" role="img" aria-label="Люди и общий прогресс">
+      <circle cx="130" cy="78" r="64" fill="var(--tone-blue-bg)" />
+      <circle cx="58" cy="54" r="5" fill="var(--tone-teal)" opacity="0.5" />
+      <circle cx="214" cy="40" r="4" fill="var(--tone-purple)" opacity="0.5" />
+      <circle cx="206" cy="122" r="3" fill="var(--tone-blue)" opacity="0.5" />
+      {/* левый */}
+      <circle cx="78" cy="78" r="15" fill="var(--tone-teal)" opacity="0.85" />
+      <rect x="52" y="96" width="52" height="34" rx="17" fill="var(--tone-teal)" opacity="0.55" />
+      {/* правый */}
+      <circle cx="184" cy="72" r="15" fill="var(--tone-purple)" opacity="0.8" />
+      <rect x="158" y="90" width="52" height="40" rx="18" fill="var(--tone-purple)" opacity="0.5" />
+      {/* центр */}
+      <circle cx="130" cy="56" r="21" fill="var(--tone-blue)" />
+      <rect x="96" y="82" width="68" height="50" rx="24" fill="var(--tone-blue)" opacity="0.9" />
+      {/* плюс */}
+      <circle cx="162" cy="116" r="15" fill="var(--color-surface)" stroke="var(--tone-blue)" strokeWidth="2" />
+      <path d="M162 109v14M155 116h14" stroke="var(--tone-blue)" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
   );
 }

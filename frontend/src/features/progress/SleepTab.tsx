@@ -38,8 +38,8 @@ export function SleepTab() {
         </div>
       )}
 
-      <div className="cols-2">
-        <Card title="Средний сон">
+      <div className="grid-2">
+        <Card title="Средний сон" icon="moon" tone="purple">
           <p className="big-number">
             {data.debt.average_minutes
               ? `${Math.floor(data.debt.average_minutes / 60)} ч ${String(data.debt.average_minutes % 60).padStart(2, "0")}`
@@ -50,12 +50,12 @@ export function SleepTab() {
           </p>
         </Card>
 
-        <Card title="Долг сна">
+        <Card title="Долг сна" icon="timer" tone="orange">
           <p className="big-number">{Math.round(data.debt.debt_minutes / 60)} ч</p>
           <p className="muted">накоплено за период</p>
         </Card>
 
-        <Card title="Целевой отбой">
+        <Card title="Целевой отбой" icon="target" tone="blue">
           <p className="big-number">
             {data.bedtime.hits}/{data.bedtime.nights}
           </p>
@@ -67,7 +67,7 @@ export function SleepTab() {
         </Card>
       </div>
 
-      <Card title="Сон → самочувствие в зале">
+      <Card title="Сон → самочувствие в зале" icon="chart" tone="teal">
         {data.vs_wellbeing.length > 1 ? (
           <>
             <SleepVsWellbeingChart points={data.vs_wellbeing} />

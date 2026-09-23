@@ -166,7 +166,7 @@ export function ReplacementsCard({ habits }: { habits: Habit[] }) {
   };
 
   return (
-    <Card title="Заменители">
+    <Card title="Заменители" icon="leaf" tone="green">
       <p className="tiny" style={{ marginBottom: "var(--space-2)" }}>
         Показываются на экране SOS — в момент тяги придумывать поздно.
       </p>
@@ -236,7 +236,7 @@ export function HealthTimelineCard({ habitId }: { habitId: number }) {
 
   if (timeline === null) {
     return (
-      <Card title="Что уже изменилось">
+      <Card title="Что уже изменилось" icon="sparkle" tone="teal">
         <Button onClick={() => void load()}>Показать таймлайн здоровья</Button>
       </Card>
     );
@@ -244,7 +244,7 @@ export function HealthTimelineCard({ habitId }: { habitId: number }) {
 
   if (timeline.length === 0) {
     return (
-      <Card title="Что уже изменилось">
+      <Card title="Что уже изменилось" icon="sparkle" tone="teal">
         <Notice tone="info">
           Для этой привычки таймлайн не заведён. Он есть у отказа от курения,
           сахара и алкоголя.
@@ -254,7 +254,7 @@ export function HealthTimelineCard({ habitId }: { habitId: number }) {
   }
 
   return (
-    <Card title="Что уже изменилось">
+    <Card title="Что уже изменилось" icon="sparkle" tone="teal">
       <ul className="list">
         {timeline.map((item) => (
           <li key={item.hours_after} className="list__item">

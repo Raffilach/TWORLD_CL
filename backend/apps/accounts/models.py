@@ -137,14 +137,16 @@ class Profile(models.Model):
 
 
 DEFAULT_TODAY_BLOCKS = [
+    # Порядок повторяет экран сверху вниз: сначала кольцо «сколько сделано»,
+    # затем то, что вносится утром, потом тренировка и вечер.
+    {"block_id": "day_progress", "visible": True},
     {"block_id": "weight", "visible": True},
-    {"block_id": "workout", "visible": True},
     {"block_id": "quick_checks", "visible": True},
-    {"block_id": "habits", "visible": True},
+    {"block_id": "workout", "visible": True},
     {"block_id": "sleep", "visible": True},
     {"block_id": "mood_energy", "visible": True},
+    {"block_id": "habits", "visible": True},
     {"block_id": "evening_plan", "visible": True},
-    {"block_id": "day_progress", "visible": True},
     {"block_id": "journal_quick", "visible": False},
     {"block_id": "measurements_due", "visible": False},
     {"block_id": "photo_due", "visible": False},

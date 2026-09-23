@@ -28,7 +28,7 @@ export function OverviewTab() {
 
   return (
     <>
-      <Card title="Слабое звено недели">
+      <Card title="Слабое звено недели" icon="target" tone="orange">
         <p className="big-number">{data.weak_link.title}</p>
         <p className="muted">{data.weak_link.detail}</p>
         <div style={{ marginTop: "var(--space-3)" }}>
@@ -39,7 +39,7 @@ export function OverviewTab() {
       </Card>
 
       {data.what_worked.length > 0 && (
-        <Card title="Что сработало">
+        <Card title="Что сработало" icon="sparkle" tone="green">
           <ul className="list">
             {data.what_worked.map((item) => (
               <li key={item} className="list__item">
@@ -50,8 +50,8 @@ export function OverviewTab() {
         </Card>
       )}
 
-      <div className="cols-2">
-        <Card title="Тренировки">
+      <div className="grid-2">
+        <Card title="Тренировки" icon="dumbbell" tone="purple">
           <p className="big-number">{metrics.workouts.count}</p>
           <p className="muted">
             тоннаж {metrics.workouts.tonnage_kg.toFixed(0)} кг
@@ -59,7 +59,7 @@ export function OverviewTab() {
           </p>
         </Card>
 
-        <Card title="Тренд-вес">
+        <Card title="Вес" icon="scale" tone="blue">
           <p className="big-number">
             {metrics.weight.trend_end_kg ? `${metrics.weight.trend_end_kg.toFixed(1)} кг` : "—"}
           </p>
@@ -70,7 +70,7 @@ export function OverviewTab() {
           </p>
         </Card>
 
-        <Card title="Сон">
+        <Card title="Сон" icon="moon" tone="purple">
           <p className="big-number">
             {metrics.sleep.average_minutes
               ? `${Math.floor(metrics.sleep.average_minutes / 60)} ч ${String(metrics.sleep.average_minutes % 60).padStart(2, "0")}`
@@ -82,7 +82,7 @@ export function OverviewTab() {
           </p>
         </Card>
 
-        <Card title="Белок">
+        <Card title="Белок" icon="protein" tone="green">
           <p className="big-number">
             {metrics.protein.days_on_target}/{metrics.protein.days_logged}
           </p>
@@ -93,7 +93,7 @@ export function OverviewTab() {
         </Card>
       </div>
 
-      <Card title="Дисциплина">
+      <Card title="Дисциплина" icon="flame" tone="teal">
         <p className="big-number">
           {metrics.discipline.discipline_percent !== null
             ? `${metrics.discipline.discipline_percent}%`

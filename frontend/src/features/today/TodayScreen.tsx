@@ -4,7 +4,8 @@ import { useState } from "react";
 import { api } from "../../shared/api/client";
 import type { TodayPayload } from "../../shared/api/types";
 import { cacheGet, cacheSet } from "../../shared/offline/db";
-import { Card, Loading, Notice } from "../../shared/ui/primitives";
+import { useHeaderAction } from "../../app/header";
+import { Card, IconButton, Loading, Notice } from "../../shared/ui/primitives";
 import { DayProgressBlock } from "./blocks/DayProgressBlock";
 import { EveningPlanBlock } from "./blocks/EveningPlanBlock";
 import { HabitsBlock } from "./blocks/HabitsBlock";
@@ -41,6 +42,11 @@ export function TodayScreen() {
     },
   });
 
+  // Настройка набора блоков — в шапке, рядом с заголовком «Сегодня».
+  useHeaderAction(
+    <IconButton icon="sliders" label="Настроить экран" variant="plain" onClick={() => setEditing(true)} />,
+  );
+
   if (isLoading || !data) return <Loading />;
 
   const onChanged = () => void refetch();
@@ -65,13 +71,6 @@ export function TodayScreen() {
 
   return (
     <>
-      <div className="row row--between" style={{ marginBottom: "var(--space-3)" }}>
-        <span className="muted">{formatToday(data.date)}</span>
-        <button type="button" className="card__action" onClick={() => setEditing(true)}>
-          Настроить
-        </button>
-      </div>
-
       {data.safety_notices.map((notice) => (
         <div key={notice.id} style={{ marginBottom: "var(--space-3)" }}>
           <Notice>
@@ -99,14 +98,6 @@ export function TodayScreen() {
   );
 }
 
-function formatToday(date: string) {
-  return new Date(date).toLocaleDateString("ru-RU", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
-
 /** Отдельный файл импортируется лениво, чтобы не тянуть роутер в блок. */
 import { WorkoutBlock } from "./blocks/WorkoutBlock";
 function WorkoutBlockLazy({ data }: { data: TodayPayload["workout"] }) {
@@ -117,7 +108,7 @@ function WorkoutBlockLazy({ data }: { data: TodayPayload["workout"] }) {
 function JournalQuickBlock({ onChanged }: { onChanged: () => void }) {
   const [text, setText] = useState("");
   return (
-    <Card title="Запись дня">
+    <Card title="Запись дня" icon="book" tone="pink">
       <textarea
         rows={3}
         value={text}

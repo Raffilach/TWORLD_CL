@@ -57,7 +57,7 @@ export function ReportTab() {
 
   return (
     <>
-      <Card title="Собрать отчёт за неделю">
+      <Card title="Собрать отчёт за неделю" icon="document" tone="blue">
         <div className="row row--wrap">
           <Chip small pressed={variant === "self"} onClick={() => setVariant("self")}>
             Короткий — для себя

@@ -5,8 +5,9 @@ import { submitOrQueue } from "../../../shared/offline/submit";
 import type { TodayPayload } from "../../../shared/api/types";
 import { haptic } from "../../../shared/hooks/useHaptics";
 import { useUndo } from "../../../shared/hooks/useUndo";
-import { NumberField } from "../../../shared/ui/NumberField";
-import { Card, Chip, Notice } from "../../../shared/ui/primitives";
+import { Icon } from "../../../shared/ui/icons";
+import { KeypadSheet } from "../../../shared/ui/Keypad";
+import { Card, Chip, IconButton, IconTile, Notice } from "../../../shared/ui/primitives";
 
 const CONDITIONS: { key: string; label: string }[] = [
   { key: "morning", label: "утро" },
@@ -16,9 +17,9 @@ const CONDITIONS: { key: string; label: string }[] = [
 ];
 
 /**
- * Вес за два тапа: тап по цифре → цифровая клавиатура → автосохранение.
+ * Вес за два тапа: «+» → цифры на своей клавиатуре → «Готово».
  *
- * Прошлое значение стоит плейсхолдером, а не заполняет поле: иначе его
+ * Прошлое значение видно рядом с табло, а не заполняет его: иначе его
  * пришлось бы стирать. Крупно показывается тренд, сырое значение — мелко:
  * +1,7 кг за неделю по сырому весу это чаще вода, а не жир.
  */
@@ -30,6 +31,7 @@ export function WeightBlock({
   onChanged: () => void;
 }) {
   const undo = useUndo();
+  const [open, setOpen] = useState(false);
   const [conditions, setConditions] = useState<Record<string, boolean>>(
     data.conditions_default ?? { morning: true, fasted: true },
   );
@@ -39,6 +41,7 @@ export function WeightBlock({
   const save = async (value: string) => {
     const weight = Number(value);
     if (!Number.isFinite(weight) || weight <= 0) return;
+    setOpen(false);
     haptic("success");
     const result = await submitOrQueue<{
       id: number;
@@ -69,48 +72,45 @@ export function WeightBlock({
 
   const trend = data.trend_kg ? Number(data.trend_kg).toFixed(1) : null;
   const change = data.change_7d !== null ? Number(data.change_7d) : null;
+  const previous = data.placeholder_kg ? Number(data.placeholder_kg).toFixed(1) : null;
 
   return (
-    <Card title="Вес утром">
-      <NumberField
-        value=""
-        placeholder={data.placeholder_kg ? Number(data.placeholder_kg).toFixed(1) : "0,0"}
-        suffix="кг"
-        ariaLabel="Вес утром, килограммы"
-        onCommit={save}
-      />
-
-      <p className="muted" style={{ textAlign: "center", marginTop: "var(--space-2)" }}>
-        {trend ? (
-          <>
-            тренд <strong>{trend} кг</strong>
+    <Card>
+      <div className="row" style={{ alignItems: "flex-start" }}>
+        <button
+          type="button"
+          className="grow"
+          style={{ textAlign: "left" }}
+          onClick={() => setOpen(true)}
+          aria-label="Записать вес утром"
+        >
+          <span className="row" style={{ gap: "var(--space-2)" }}>
+            <IconTile icon="scale" tone="blue" size="sm" />
+            <span className="strong">Вес утром</span>
+          </span>
+          <span className="row" style={{ alignItems: "baseline", marginTop: "var(--space-2)", gap: "var(--space-3)" }}>
+            <span className="hero-number">
+              {trend ?? "—"}
+              <span className="unit"> кг</span>
+            </span>
             {change !== null && (
-              <> · {change > 0 ? "+" : ""}{change.toFixed(2)} за неделю</>
+              <span className="delta" style={{ color: "var(--color-accent)" }}>
+                <Icon name={change > 0 ? "trendUp" : "trendDown"} size={14} strokeWidth={2.4} />
+                {change > 0 ? "+" : ""}
+                {change.toFixed(1)}
+                <span className="tiny" style={{ marginLeft: 2 }}>
+                  за неделю
+                </span>
+              </span>
             )}
-          </>
-        ) : (
-          "Тренд появится после нескольких взвешиваний"
-        )}
-      </p>
-      {data.raw_kg && (
-        <p className="tiny" style={{ textAlign: "center" }}>
-          последнее значение {Number(data.raw_kg).toFixed(1)} кг
-        </p>
-      )}
-
-      <div className="row row--wrap" style={{ marginTop: "var(--space-3)" }}>
-        {CONDITIONS.map((condition) => (
-          <Chip
-            key={condition.key}
-            small
-            pressed={Boolean(conditions[condition.key])}
-            onClick={() =>
-              setConditions((prev) => ({ ...prev, [condition.key]: !prev[condition.key] }))
-            }
-          >
-            {condition.label}
-          </Chip>
-        ))}
+          </span>
+          <span className="tiny" style={{ display: "block", marginTop: 2 }}>
+            {trend
+              ? `тренд за 7 дней${data.raw_kg ? ` · последнее ${Number(data.raw_kg).toFixed(1)} кг` : ""}`
+              : "Тренд появится после нескольких взвешиваний"}
+          </span>
+        </button>
+        <IconButton icon="plus" label="Добавить вес" variant="primary" onClick={() => setOpen(true)} />
       </div>
 
       {note && (
@@ -123,6 +123,30 @@ export function WeightBlock({
           <Notice>{warning}</Notice>
         </div>
       )}
+
+      <KeypadSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Вес, кг"
+        unit="кг"
+        hint={previous ? `Прошлый раз: ${previous}` : undefined}
+        onSubmit={(value) => void save(value)}
+      >
+        <div className="row row--wrap" style={{ marginBottom: "var(--space-3)" }}>
+          {CONDITIONS.map((condition) => (
+            <Chip
+              key={condition.key}
+              small
+              pressed={Boolean(conditions[condition.key])}
+              onClick={() =>
+                setConditions((prev) => ({ ...prev, [condition.key]: !prev[condition.key] }))
+              }
+            >
+              {condition.label}
+            </Chip>
+          ))}
+        </div>
+      </KeypadSheet>
     </Card>
   );
 }

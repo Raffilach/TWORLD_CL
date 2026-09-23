@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { haptic } from "../hooks/useHaptics";
+import { Icon } from "./icons";
+import { IconButton, Ring } from "./primitives";
 
 /**
  * Таймеры считают по стенным часам, а не по тикам.
@@ -84,26 +86,27 @@ export function RestTimer({
     if (left > 0) fired.current = false;
   }, [left]);
 
+  const share = seconds > 0 ? (seconds - left) / seconds : 1;
+
   return (
-    <div className="rest-timer">
-      <strong className="mono" style={{ fontSize: "var(--font-size-xl)" }}>
-        {formatClock(left)}
-      </strong>
-      <div className="grow">
-        <div className="progress">
-          <div
-            className="progress__fill"
-            style={{ width: `${seconds > 0 ? ((seconds - left) / seconds) * 100 : 100}%` }}
-          />
-        </div>
-        <span className="tiny">Отдых</span>
+    <div className="rest-timer" role="timer" aria-label="Таймер отдыха">
+      <div className="rest-timer__ring">
+        <Ring value={share} max={1} size={52} stroke={5}>
+          <span style={{ color: "var(--tone-green)", lineHeight: 0 }}>
+            <Icon name="timer" size={20} />
+          </span>
+        </Ring>
       </div>
-      <button type="button" className="btn" onClick={() => onAdd(30)}>
+      <div className="grow">
+        <span className="tiny">{left > 0 ? "Отдых" : "Отдых закончился"}</span>
+        <div>
+          <strong className="mono rest-timer__time">{formatClock(left)}</strong>
+        </div>
+      </div>
+      <button type="button" className="chip chip--sm" onClick={() => onAdd(30)}>
         +30 с
       </button>
-      <button type="button" className="btn btn--ghost" onClick={onSkip}>
-        Пропустить
-      </button>
+      <IconButton icon="play" label="Пропустить" variant="primary" size="lg" onClick={onSkip} />
     </div>
   );
 }
@@ -144,7 +147,9 @@ export function Stopwatch({
 
   return (
     <div className="stack">
-      <output className="timer-display">{formatClock(elapsed)}</output>
+      <div className="row" style={{ justifyContent: "center" }}>
+        <output className="timer-display stopwatch-display">{formatClock(elapsed)}</output>
+      </div>
 
       <div className="row" style={{ gap: "var(--space-2)" }}>
         {!running ? (

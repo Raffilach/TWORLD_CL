@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { api } from "../../../shared/api/client";
 import { submitOrQueue } from "../../../shared/offline/submit";
@@ -6,7 +7,10 @@ import { useList } from "../../../shared/api/hooks";
 import type { TodayPayload } from "../../../shared/api/types";
 import { haptic } from "../../../shared/hooks/useHaptics";
 import { useUndo } from "../../../shared/hooks/useUndo";
-import { Card, Chip, Progress } from "../../../shared/ui/primitives";
+import { Icon } from "../../../shared/ui/icons";
+import type { IconName } from "../../../shared/ui/icons";
+import { Card, IconButton, IconTile, Progress } from "../../../shared/ui/primitives";
+import type { Tone } from "../../../shared/ui/primitives";
 import { Sheet } from "../../../shared/ui/Sheet";
 
 interface FoodItem {
@@ -17,10 +21,11 @@ interface FoodItem {
 }
 
 /**
- * Добавки, вода и белок — по одному тапу на действие.
+ * Вода, белок и добавки — по строке на каждое, с полосой до цели.
  *
- * Вода: тап по кружку или по «+». Белок: тап по частому продукту.
- * Ни одной формы и ни одной кнопки «Сохранить».
+ * Вода: «+» = стакан, сразу. Белок и добавки: «+» открывает короткий
+ * список, где выбор — ещё один тап. Ни одной формы и ни одной кнопки
+ * «Сохранить».
  */
 export function QuickChecksBlock({
   data,
@@ -31,6 +36,7 @@ export function QuickChecksBlock({
 }) {
   const undo = useUndo();
   const [foodsOpen, setFoodsOpen] = useState(false);
+  const [supplementsOpen, setSupplementsOpen] = useState(false);
   const { data: quick } = useList<FoodItem>(["foods", "quick"], "/nutrition/foods/", {
     is_quick_button: "true",
     page_size: 12,
@@ -38,6 +44,7 @@ export function QuickChecksBlock({
 
   const glasses = Math.max(1, Math.round(data.water_target_ml / data.water_glass_ml));
   const filled = Math.floor(data.water_done_ml / data.water_glass_ml);
+  const taken = data.supplements.filter((item) => item.taken).length;
 
   const addGlass = async () => {
     haptic("tap");
@@ -79,71 +86,51 @@ export function QuickChecksBlock({
   };
 
   return (
-    <Card title="Отметки за день">
-      <div className="stack">
-        {data.supplements.length > 0 && (
-          <div>
-            <p className="muted">Добавки</p>
-            <div className="row row--wrap" style={{ marginTop: "var(--space-2)" }}>
-              {data.supplements.map((supplement) => (
-                <Chip
-                  key={supplement.id}
-                  pressed={supplement.taken}
-                  onClick={() => void toggleSupplement(supplement.id)}
-                >
-                  {supplement.taken ? "✓ " : ""}
-                  {supplement.name}
-                </Chip>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div>
-          <div className="row row--between">
-            <span className="muted">Вода</span>
-            <span className="muted">
-              {data.water_done_ml} / {data.water_target_ml} мл
-            </span>
-          </div>
-          <div className="dots" style={{ marginTop: "var(--space-2)" }}>
-            {Array.from({ length: glasses }, (_, index) => (
-              <button
-                key={index}
-                type="button"
-                className={`dot ${index < filled ? "dot--filled" : ""}`}
-                aria-label={`Стакан ${index + 1} из ${glasses}`}
-                onClick={() => void addGlass()}
-              />
-            ))}
-            <button type="button" className="dot" aria-label="Добавить стакан" onClick={() => void addGlass()}>
-              +
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <div className="row row--between">
-            <span className="muted">Белок</span>
-            <span className="muted">
-              {Math.round(data.protein_done_g)} / {data.protein_target_g} г
-            </span>
-          </div>
-          <div style={{ marginTop: "var(--space-2)" }}>
-            <Progress value={data.protein_done_g} max={data.protein_target_g} />
-          </div>
-          <div className="row row--wrap" style={{ marginTop: "var(--space-2)" }}>
-            {(quick ?? []).slice(0, 4).map((food) => (
-              <Chip key={food.id} small onClick={() => void addProtein(food)}>
-                {food.name.split(",")[0]} · {Number(food.protein_g).toFixed(0)} г
-              </Chip>
-            ))}
-            <Chip small onClick={() => setFoodsOpen(true)} aria-label="Больше продуктов">
-              ＋
-            </Chip>
-          </div>
-        </div>
-      </div>
+    <Card className="card--tight">
+      <Metric
+        icon="water"
+        tone="sky"
+        label="Вода"
+        value={filled}
+        max={glasses}
+        valueLabel={
+          <>
+            {filled} <small>/ {glasses}</small>
+          </>
+        }
+        addLabel={`Добавить стакан воды (${data.water_done_ml} из ${data.water_target_ml} мл)`}
+        onAdd={() => void addGlass()}
+      />
+      <Metric
+        icon="protein"
+        tone="green"
+        label="Белок"
+        value={data.protein_done_g}
+        max={data.protein_target_g}
+        valueLabel={
+          <>
+            {Math.round(data.protein_done_g)} <small>/ {data.protein_target_g} г</small>
+          </>
+        }
+        addLabel="Добавить белок"
+        onAdd={() => setFoodsOpen(true)}
+      />
+      {data.supplements.length > 0 && (
+        <Metric
+          icon="pill"
+          tone="yellow"
+          label="Добавки"
+          value={taken}
+          max={data.supplements.length}
+          valueLabel={
+            <>
+              {taken} <small>/ {data.supplements.length}</small>
+            </>
+          }
+          addLabel="Отметить добавки"
+          onAdd={() => setSupplementsOpen(true)}
+        />
+      )}
 
       <Sheet open={foodsOpen} onClose={() => setFoodsOpen(false)} title="Белок в один тап">
         <div className="list">
@@ -154,12 +141,81 @@ export function QuickChecksBlock({
               className="list__item"
               onClick={() => void addProtein(food)}
             >
-              <span className="grow">{food.name}</span>
-              <span className="mono">{Number(food.protein_g).toFixed(0)} г</span>
+              <span className="grow">
+                {food.name}
+                <br />
+                <span className="tiny">
+                  {food.serving_label} · {Number(food.protein_g).toFixed(0)} г белка
+                </span>
+              </span>
+              <span className="icon-btn icon-btn--soft" aria-hidden="true">
+                <Icon name="plus" size={18} strokeWidth={2.2} />
+              </span>
+            </button>
+          ))}
+        </div>
+      </Sheet>
+
+      <Sheet open={supplementsOpen} onClose={() => setSupplementsOpen(false)} title="Добавки сегодня">
+        <div className="list">
+          {data.supplements.map((supplement) => (
+            <button
+              key={supplement.id}
+              type="button"
+              className="list__item"
+              aria-pressed={supplement.taken}
+              onClick={() => void toggleSupplement(supplement.id)}
+            >
+              <span className="grow">{supplement.name}</span>
+              <span
+                className={`status-dot ${supplement.taken ? "status-dot--done" : ""}`}
+                aria-hidden="true"
+              >
+                {supplement.taken && <Icon name="check" size={12} strokeWidth={3} />}
+              </span>
             </button>
           ))}
         </div>
       </Sheet>
     </Card>
+  );
+}
+
+function Metric({
+  icon,
+  tone,
+  label,
+  value,
+  max,
+  valueLabel,
+  hint,
+  addLabel,
+  onAdd,
+}: {
+  icon: IconName;
+  tone: Tone;
+  label: string;
+  value: number;
+  max: number;
+  valueLabel: ReactNode;
+  hint?: string;
+  addLabel: string;
+  onAdd: () => void;
+}) {
+  return (
+    <div className="metric">
+      <IconTile icon={icon} tone={tone} />
+      <div className="metric__body">
+        <div className="metric__top">
+          <span className="metric__label">
+            {label}
+            {hint && <span className="tiny"> · {hint}</span>}
+          </span>
+          <span className="metric__value">{valueLabel}</span>
+        </div>
+        <Progress value={value} max={max} tone={tone} />
+      </div>
+      <IconButton icon="plus" label={addLabel} size="sm" onClick={onAdd} />
+    </div>
   );
 }

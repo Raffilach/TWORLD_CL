@@ -76,7 +76,7 @@ export function HabitsTab() {
       {habits.data?.length === 0 && <Empty>Привычек пока нет.</Empty>}
 
       {patterns.data && patterns.data.samples > 0 && (
-        <Card title="Карта тяги">
+        <Card title="Карта тяги" icon="flame" tone="orange">
           <p className="muted">
             {patterns.data.samples} записей
             {patterns.data.riskiest_hour !== null && (

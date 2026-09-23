@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { api } from "../../shared/api/client";
-import { Card, Chip, Notice } from "../../shared/ui/primitives";
+import { Card, Notice, Toggle } from "../../shared/ui/primitives";
 
 interface Settings {
   max_per_day: number;
@@ -37,7 +37,7 @@ function urlBase64ToUint8Array(value: string): Uint8Array {
  * формулировки нейтральные. Уведомлений с укором в приложении нет
  * и не должно появиться.
  */
-export function NotificationSettings() {
+export function NotificationSettings({ embedded = false }: { embedded?: boolean } = {}) {
   const [error, setError] = useState<string | null>(null);
   const settings = useQuery({
     queryKey: ["notification-settings"],
@@ -104,7 +104,7 @@ export function NotificationSettings() {
   const data = settings.data;
 
   return (
-    <Card title="Уведомления">
+    <Card title={embedded ? undefined : "Уведомления"} className={embedded ? "card--flat" : ""}>
       <div className="stack">
         <div className="row row--between">
           <span>
@@ -114,9 +114,11 @@ export function NotificationSettings() {
               На iPhone работают, только если приложение добавлено на домашний экран.
             </span>
           </span>
-          <Chip pressed={data.push_enabled} onClick={() => void requestPermission()}>
-            {data.push_enabled ? "вкл" : "выкл"}
-          </Chip>
+          <Toggle
+            checked={data.push_enabled}
+            label="Разрешить уведомления"
+            onChange={() => void requestPermission()}
+          />
         </div>
 
         <div className="row row--between">
@@ -125,12 +127,11 @@ export function NotificationSettings() {
             <br />
             <span className="tiny">в {data.morning_weigh_in_time?.slice(0, 5)}</span>
           </span>
-          <Chip
-            pressed={data.morning_weigh_in_enabled}
-            onClick={() => void patch({ morning_weigh_in_enabled: !data.morning_weigh_in_enabled })}
-          >
-            {data.morning_weigh_in_enabled ? "вкл" : "выкл"}
-          </Chip>
+          <Toggle
+            checked={data.morning_weigh_in_enabled}
+            label="Утром — взвеситься"
+            onChange={() => void patch({ morning_weigh_in_enabled: !data.morning_weigh_in_enabled })}
+          />
         </div>
 
         <div className="row row--between">
@@ -139,12 +140,11 @@ export function NotificationSettings() {
             <br />
             <span className="tiny">за {data.bedtime_reminder_minutes_before} минут до цели</span>
           </span>
-          <Chip
-            pressed={data.bedtime_reminder_enabled}
-            onClick={() => void patch({ bedtime_reminder_enabled: !data.bedtime_reminder_enabled })}
-          >
-            {data.bedtime_reminder_enabled ? "вкл" : "выкл"}
-          </Chip>
+          <Toggle
+            checked={data.bedtime_reminder_enabled}
+            label="Вечером — про отбой"
+            onChange={() => void patch({ bedtime_reminder_enabled: !data.bedtime_reminder_enabled })}
+          />
         </div>
 
         <div className="row row--between">
@@ -153,14 +153,11 @@ export function NotificationSettings() {
             <br />
             <span className="tiny">час определяется по журналу тяги</span>
           </span>
-          <Chip
-            pressed={data.habit_risk_reminder_enabled}
-            onClick={() =>
-              void patch({ habit_risk_reminder_enabled: !data.habit_risk_reminder_enabled })
-            }
-          >
-            {data.habit_risk_reminder_enabled ? "вкл" : "выкл"}
-          </Chip>
+          <Toggle
+            checked={data.habit_risk_reminder_enabled}
+            label="В личное рисковое время"
+            onChange={() => void patch({ habit_risk_reminder_enabled: !data.habit_risk_reminder_enabled })}
+          />
         </div>
 
         <label className="field">

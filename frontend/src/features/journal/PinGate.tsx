@@ -36,7 +36,7 @@ export function PinGate({ onUnlock }: { onUnlock: () => void }) {
   };
 
   return (
-    <Card title="Дневник закрыт">
+    <Card title="Дневник закрыт" icon="lock" tone="purple">
       <p className="muted">
         {localStorage.getItem("tworld.diary.pin")
           ? "Введи пин-код."

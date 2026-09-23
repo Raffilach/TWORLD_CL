@@ -94,7 +94,7 @@ export function NutritionTab() {
 
   return (
     <>
-      <Card title="Белок по дням">
+      <Card title="Белок по дням" icon="protein" tone="green">
         {context.data?.nutrition.protein_by_day.length ? (
           <SimpleLineChart
             data={context.data.nutrition.protein_by_day.slice(-30)}
@@ -106,7 +106,7 @@ export function NutritionTab() {
         )}
       </Card>
 
-      <Card title="Исключения за неделю">
+      <Card title="Исключения за неделю" icon="leaf" tone="teal">
         <div className="row row--wrap" style={{ marginBottom: "var(--space-3)" }}>
           {KINDS.map((kind) => (
             <Chip key={kind.code} small onClick={() => void logException(kind.code, kind.sugar)}>
@@ -170,7 +170,7 @@ export function NutritionTab() {
       </Card>
 
       {today.data?.energy && (
-        <Card title="Расход калорий">
+        <Card title="Расход калорий" icon="flame" tone="orange">
           {today.data.energy.adaptive.available ? (
             <>
               <p className="big-number">
@@ -200,7 +200,7 @@ export function NutritionTab() {
 
       <MealsCard />
 
-      <Card title="Продукты">
+      <Card title="Продукты" icon="book" tone="blue">
         <Button onClick={() => setScannerOpen(true)}>Сканировать штрихкод</Button>
       </Card>
 

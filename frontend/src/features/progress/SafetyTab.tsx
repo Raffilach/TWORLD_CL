@@ -46,7 +46,7 @@ export function SafetyTab() {
         </div>
       ))}
 
-      <Card title="Активные травмы">
+      <Card title="Активные травмы" icon="bandage" tone="orange">
         {data.active_injuries.length ? (
           <ul className="list">
             {data.active_injuries.map((injury) => (
@@ -74,7 +74,7 @@ export function SafetyTab() {
         )}
       </Card>
 
-      <Card title="Личные лимиты веса">
+      <Card title="Личные лимиты веса" icon="shield" tone="blue">
         {data.limits.length ? (
           <ul className="list">
             {data.limits.map((limit) => (

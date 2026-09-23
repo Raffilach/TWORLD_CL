@@ -7,7 +7,8 @@ import type { BlockPriority, SessionExercise, WorkoutSession } from "../../share
 import { haptic } from "../../shared/hooks/useHaptics";
 import { useSyncStatus } from "../../shared/hooks/useOnline";
 import { useUndo } from "../../shared/hooks/useUndo";
-import { Button, Loading, Notice, Scale, StatusDot } from "../../shared/ui/primitives";
+import { Icon } from "../../shared/ui/icons";
+import { Button, IconButton, Loading, Notice, Ring, Scale, StatusDot } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 import { RestTimer, SessionClock } from "../../shared/ui/timers";
 import { ExercisePanel } from "./ExercisePanel";
@@ -89,33 +90,48 @@ export function SessionScreen() {
   return (
     <div className="app app--fullscreen">
       <div className="grow">
-        <header className="app__header">
-          <button type="button" className="btn btn--ghost" onClick={() => navigate(-1)} aria-label="Назад">
-            ←
-          </button>
+        <header className="app__header app__header--compact">
+          <IconButton icon="chevronLeft" label="Назад" variant="plain" onClick={() => navigate(-1)} />
           <div className="grow">
-            <strong>{session.template_name ?? "Тренировка"}</strong>{" "}
-            <SessionClock startedAt={session.started_at} />
-            <br />
+            <h1 className="app__title">{session.template_name ?? "Тренировка"}</h1>
             {/* Статус нужен именно здесь: в зале связи может не быть,
                 и человек должен видеть, что подходы не потерялись. */}
-            <span className="sync-status">
-              {!online
-                ? `Оффлайн · ${pending} в очереди`
-                : pending > 0
-                  ? `${pending} ждут отправки`
-                  : "Синхронизировано"}
+            <span className="row" style={{ gap: "var(--space-2)" }}>
+              <span className="badge tone-blue">
+                <Icon name="timer" size={12} /> <SessionClock startedAt={session.started_at} />
+              </span>
+              <span className="sync-status" data-state={!online ? "offline" : pending > 0 ? "pending" : "ok"}>
+                {!online
+                  ? `Оффлайн · ${pending} в очереди`
+                  : pending > 0
+                    ? `${pending} ждут отправки`
+                    : "Синхронизировано"}
+              </span>
             </span>
           </div>
-          <Button onClick={() => setFinishing(true)}>Завершить</Button>
+          <Button variant="soft" className="btn--pill" onClick={() => setFinishing(true)}>
+            Завершить
+          </Button>
         </header>
 
         <main className="app__main app-scroll">
           {required && (
-            <p className="muted">
-              Обязательный блок: {required.done} из {required.total}
-              {session.completion.required_done && " — день засчитан"}
-            </p>
+            <div className="card card--tight row" style={{ gap: "var(--space-3)" }}>
+              <Ring value={required.done} max={required.total} size={48} stroke={5}>
+                <span className="tiny strong" style={{ color: "var(--color-text)" }}>
+                  {required.done}/{required.total}
+                </span>
+              </Ring>
+              <span className="grow">
+                <span className="strong">Обязательный блок</span>
+                <br />
+                <span className="tiny">
+                  {session.completion.required_done
+                    ? "Закрыт — день засчитан"
+                    : "Закрой его — и день засчитан, остальное по силам"}
+                </span>
+              </span>
+            </div>
           )}
 
           {(Object.keys(BLOCK_TITLES) as BlockPriority[]).map((priority) =>

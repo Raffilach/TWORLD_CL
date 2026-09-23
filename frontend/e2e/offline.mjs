@@ -29,7 +29,7 @@ await page.getByRole("button", { name: "Войти" }).click();
 await page.waitForSelector(".tabbar");
 await page.waitForTimeout(1200);
 
-for (const name of ["Вернуться к тренировке", "Начать", "Начать сейчас"]) {
+for (const name of ["Вернуться к тренировке", "Начать тренировку", "Начать сейчас"]) {
   const button = page.getByRole("button", { name, exact: true }).first();
   if (await button.isVisible().catch(() => false)) {
     await button.click();

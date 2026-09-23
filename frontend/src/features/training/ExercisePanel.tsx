@@ -6,6 +6,7 @@ import { submitOrQueue } from "../../shared/offline/submit";
 import { useList } from "../../shared/api/hooks";
 import type { SessionExercise, SetLog, WorkoutSession } from "../../shared/api/types";
 import { haptic } from "../../shared/hooks/useHaptics";
+import { Icon } from "../../shared/ui/icons";
 import { Button, Chip, Notice, StatusDot } from "../../shared/ui/primitives";
 import { Sheet } from "../../shared/ui/Sheet";
 import { CountStepper, WeightStepper } from "../../shared/ui/Stepper";
@@ -178,7 +179,9 @@ export function ExercisePanel({
                 : "нет подходов"}
           </span>
         </span>
-        <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+        <span className="exercise-item__chevron" aria-hidden="true">
+          <Icon name={open ? "chevronUp" : "chevronDown"} size={20} />
+        </span>
       </button>
 
       {open && (
@@ -204,37 +207,56 @@ export function ExercisePanel({
           ))}
 
           {allSets.length > 0 && (
-            <ul className="list">
-              {allSets.map((set) => (
-                <li key={set.id ?? set.client_id}>
-                  <SwipeRow onDelete={() => set.id && void deleteSet(set.id)}>
-                    <div className={`set-row ${set.is_warmup ? "set-row--warmup" : ""}`}>
-                      <span className="tiny">{set.is_warmup ? "разм." : `#${set.set_number}`}</span>
-                      <span className="mono">
-                        {set.duration_seconds !== null
-                          ? `${set.duration_seconds} с${set.duration_label ? ` (${set.duration_label})` : ""}`
-                          : `${Number(set.weight_kg ?? 0)}${set.weight_is_per_side ? "/стор." : ""} × ${set.reps ?? 0}`}
-                        {set.rir !== null && <span className="tiny"> RIR {set.rir}</span>}
-                      </span>
-                      {set.id ? (
-                        <button
-                          type="button"
-                          className="btn btn--ghost btn--square"
-                          aria-label="Удалить подход"
-                          onClick={() => void deleteSet(set.id!)}
-                        >
-                          ×
-                        </button>
-                      ) : (
-                        <span className="tiny" title="Ждёт сети">
-                          ⋯
+            <div>
+              <div className="set-table__head" aria-hidden="true">
+                <span>№</span>
+                <span>{isTimed ? "время" : "кг"}</span>
+                <span>{isTimed ? "" : "повт."}</span>
+                <span>RIR</span>
+                <span />
+              </div>
+              <ul className="list">
+                {allSets.map((set) => (
+                  <li key={set.id ?? set.client_id}>
+                    <SwipeRow onDelete={() => set.id && void deleteSet(set.id)}>
+                      <div className={`set-row ${set.is_warmup ? "set-row--warmup" : ""}`}>
+                        <span className="set-row__num" title={set.is_warmup ? "разминка" : undefined}>
+                          {set.is_warmup ? "р" : set.set_number}
                         </span>
-                      )}
-                    </div>
-                  </SwipeRow>
-                </li>
-              ))}
-            </ul>
+                        {set.duration_seconds !== null && set.duration_seconds !== undefined ? (
+                          <span className="set-row__cell mono" style={{ gridColumn: "span 2" }}>
+                            {set.duration_seconds} с{set.duration_label ? ` (${set.duration_label})` : ""}
+                          </span>
+                        ) : (
+                          <>
+                            <span className="set-row__cell mono">
+                              {Number(set.weight_kg ?? 0)}
+                              {set.weight_is_per_side && <span className="tiny">/ст.</span>}
+                            </span>
+                            <span className="set-row__cell mono">{set.reps ?? 0}</span>
+                          </>
+                        )}
+                        <span className="set-row__rir">{set.rir ?? "—"}</span>
+                        {set.id ? (
+                          <button
+                            type="button"
+                            className="icon-btn icon-btn--plain"
+                            aria-label="Удалить подход"
+                            onClick={() => void deleteSet(set.id!)}
+                          >
+                            <Icon name="close" size={16} />
+                          </button>
+                        ) : (
+                          <span className="tiny center" title="Ждёт сети">
+                            ⋯
+                          </span>
+                        )}
+                      </div>
+                    </SwipeRow>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {isTimed ? (
@@ -323,7 +345,7 @@ export function ExercisePanel({
               </div>
 
               {prefill?.last_sets && prefill.last_sets.length > 0 && (
-                <Button onClick={() => void repeatLast()}>
+                <Button variant="soft" onClick={() => void repeatLast()}>
                   Как в прошлый раз ({withPlural(prefill.last_sets.length, "подход", "подхода", "подходов")})
                 </Button>
               )}

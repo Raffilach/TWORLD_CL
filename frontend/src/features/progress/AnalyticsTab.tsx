@@ -56,7 +56,7 @@ export function AnalyticsTab() {
 
   return (
     <>
-      <Card title="Корреляции">
+      <Card title="Корреляции" icon="sparkle" tone="purple">
         <ul className="list">
           {correlations.data?.correlations.map((item) => (
             <li key={item.key}>
@@ -90,7 +90,7 @@ export function AnalyticsTab() {
         </ul>
       </Card>
 
-      <Card title="Сравнение недель">
+      <Card title="Сравнение недель" icon="chart" tone="blue">
         {compare.data ? (
           <div className="row row--between">
             <div>
@@ -110,7 +110,7 @@ export function AnalyticsTab() {
         )}
       </Card>
 
-      <Card title={`Календарь ${heatmap.data?.year ?? ""}`}>
+      <Card title={`Календарь ${heatmap.data?.year ?? ""}`} icon="calendar" tone="teal">
         {heatmap.data?.days.length ? (
           <div className="heatmap">
             {heatmap.data.days.map((day) => (
@@ -132,7 +132,7 @@ export function AnalyticsTab() {
         )}
       </Card>
 
-      <Card title="Нормативы">
+      <Card title="Нормативы" icon="target" tone="orange">
         {standards.data?.length ? (
           <ul className="list">
             {standards.data.map((standard) => (

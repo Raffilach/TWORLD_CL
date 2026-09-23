@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Chip } from "../../shared/ui/primitives";
+import { Segmented } from "../../shared/ui/primitives";
 import { AnalyticsTab } from "./AnalyticsTab";
 import { BodyTab } from "./BodyTab";
 import { HabitsTab } from "./HabitsTab";
@@ -39,13 +39,7 @@ export function ProgressScreen() {
 
   return (
     <>
-      <div className="row row--wrap" style={{ marginBottom: "var(--space-4)" }}>
-        {TABS.map((item) => (
-          <Chip key={item.id} small pressed={tab === item.id} onClick={() => setTab(item.id)}>
-            {item.label}
-          </Chip>
-        ))}
-      </div>
+      <Segmented label="Раздел прогресса" options={TABS} value={tab} onChange={setTab} scroll />
 
       {tab === "overview" && <OverviewTab />}
       {tab === "body" && <BodyTab />}

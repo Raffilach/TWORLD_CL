@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 
+import { IconButton } from "./primitives";
+
 /** Нижний лист: содержимое в зоне большого пальца, закрытие тапом по фону. */
 export function Sheet({
   open,
@@ -34,7 +36,12 @@ export function Sheet({
     >
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title}>
         <div className="sheet__handle" />
-        {title && <h2 className="card__title" style={{ marginBottom: "var(--space-3)" }}>{title}</h2>}
+        {title && (
+          <div className="sheet__head">
+            <h2 className="sheet__title">{title}</h2>
+            <IconButton icon="close" label="Закрыть" variant="plain" size="sm" onClick={onClose} />
+          </div>
+        )}
         {children}
       </div>
     </div>

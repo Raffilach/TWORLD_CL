@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { api } from "../../../shared/api/client";
 import type { TodayPayload } from "../../../shared/api/types";
+import { Icon } from "../../../shared/ui/icons";
+import { withPlural } from "../../../shared/ui/plural";
 import { Button, Card } from "../../../shared/ui/primitives";
 import { Sheet } from "../../../shared/ui/Sheet";
 import { SosSheet } from "../../habits/SosSheet";
@@ -37,21 +39,26 @@ export function HabitsBlock({
   return (
     <Card
       title="Привычки"
+      icon="leaf"
+      tone="teal"
       action={
         <button type="button" className="card__action" onClick={() => setSosOpen(true)}>
-          SOS
+          <Icon name="sos" size={16} /> SOS
         </button>
       }
     >
       <div className="list">
         {habits.map((habit) => (
-          <div key={habit.id} className="list__item">
-            <span className="grow">{habit.name}</span>
-            <span className="mono" title="текущая серия">
-              {habit.current_streak}
+          <div key={habit.id} className="list__item" style={{ padding: "var(--space-2) 0" }}>
+            <span className="grow">
+              <span className="strong">{habit.name}</span>
+              <br />
+              <span className="tiny" title="дней с решения — не обнуляется">
+                {withPlural(habit.days_since_decision, "день", "дня", "дней")} с решения
+              </span>
             </span>
-            <span className="tiny" title="дней с решения — не обнуляется">
-              из {habit.days_since_decision}
+            <span className="badge tone-teal" title="текущая серия">
+              <Icon name="flame" size={12} /> {habit.current_streak}
             </span>
             <button
               type="button"

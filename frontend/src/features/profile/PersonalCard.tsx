@@ -15,7 +15,7 @@ const SEX = [
 ];
 
 /** Личные данные, аватар и смена пароля. */
-export function PersonalCard() {
+export function PersonalCard({ embedded = false }: { embedded?: boolean } = {}) {
   const { user, refreshUser } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(user?.profile ?? null);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -41,7 +41,7 @@ export function PersonalCard() {
 
   return (
     <>
-      <Card title="Профиль">
+      <Card title={embedded ? undefined : "Профиль"} className={embedded ? "card--flat" : ""}>
         <div className="row" style={{ gap: "var(--space-4)" }}>
           <Avatar user={user} size={64} />
           <div className="grow">

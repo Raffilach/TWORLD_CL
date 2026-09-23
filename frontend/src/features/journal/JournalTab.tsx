@@ -97,7 +97,7 @@ export function JournalTab() {
 
   return (
     <>
-      <Card title="Запись">
+      <Card title="Запись" icon="edit" tone="blue">
         <textarea
           rows={4}
           value={text}
@@ -166,7 +166,7 @@ export function JournalTab() {
         )}
       </Card>
 
-      <Card title="История">
+      <Card title="История" icon="book" tone="purple">
         {entries.data?.length ? (
           <ul className="list">
             {entries.data.map((entry) => (
