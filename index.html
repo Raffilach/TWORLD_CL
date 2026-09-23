@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мышечная карта нагрузки</title>
+  <meta name="description" content="Детализированная анатомическая карта мышц с трёхцветной шкалой нагрузки: конструктор тренировок, ручная разметка, сводка по группам.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='4' width='8' height='24' rx='3' fill='%232fb35a'/%3E%3Crect x='12' y='4' width='8' height='24' rx='3' fill='%23f4c20d'/%3E%3Crect x='22' y='4' width='8' height='24' rx='3' fill='%23e5383b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div>
+        <h1>Мышечная карта нагрузки</h1>
+        <p class="subtitle">44 мышцы · 16 групп · трёхцветная шкала</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="field" id="scale-field">
+        <span class="field-label">Шкала</span>
+        <div class="seg" role="radiogroup" aria-label="Шкала нагрузки" id="scale-seg">
+          <button type="button" data-scale="session" role="radio">Тренировка</button>
+          <button type="button" data-scale="week" role="radio">Неделя</button>
+        </div>
+      </div>
+      <div class="field" id="threshold-field">
+        <span class="field-label">Пороги, эфф. подходы</span>
+        <div class="thresholds">
+          <label><span class="dot mid"></span><input type="number" id="t1" min="0.25" step="0.25" aria-label="Начало средней зоны"></label>
+          <label><span class="dot high"></span><input type="number" id="t2" min="0.5" step="0.25" aria-label="Начало высокой зоны"></label>
+        </div>
+      </div>
+      <div class="field" id="color-field">
+        <span class="field-label">Заливка</span>
+        <div class="seg" role="radiogroup" aria-label="Режим заливки" id="color-seg">
+          <button type="button" data-color="zones" role="radio">Зоны</button>
+          <button type="button" data-color="gradient" role="radio">Градиент</button>
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <button type="button" class="btn ghost icon" id="theme-btn" title="Тема оформления" aria-label="Переключить тему"></button>
+        <button type="button" class="btn" id="export-btn">Скачать PNG</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Левая панель: источник нагрузки -->
+    <aside class="panel panel-left">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-mode="workout" id="tab-workout">Конструктор</button>
+        <button type="button" role="tab" data-mode="manual" id="tab-manual">Ручная разметка</button>
+      </div>
+
+      <section class="tab-body" id="body-workout" role="tabpanel" aria-labelledby="tab-workout">
+        <div class="block">
+          <h2 class="block-title">Готовые программы</h2>
+          <div class="chips" id="presets"></div>
+        </div>
+
+        <div class="block">
+          <div class="block-head">
+            <h2 class="block-title">Тренировка <span class="count" id="workout-count"></span></h2>
+            <button type="button" class="link-btn" id="clear-workout">Очистить</button>
+          </div>
+          <ol class="workout" id="workout"></ol>
+          <p class="empty" id="workout-empty">Добавьте упражнения из библиотеки или выберите программу — карта окрасится автоматически.</p>
+        </div>
+
+        <div class="block">
+          <h2 class="block-title">Библиотека упражнений</h2>
+          <div class="lib-filters">
+            <input type="search" id="lib-search" placeholder="Поиск: присед, жим, тяга…" aria-label="Поиск упражнения">
+            <select id="lib-cat" aria-label="Фильтр по группе"></select>
+          </div>
+          <ul class="library" id="library"></ul>
+        </div>
+      </section>
+
+      <section class="tab-body" id="body-manual" role="tabpanel" aria-labelledby="tab-manual" hidden>
+        <div class="block">
+          <h2 class="block-title">Кисть</h2>
+          <p class="hint">Выберите уровень и нажимайте на мышцы. Повторное нажатие тем же уровнем снимает отметку.</p>
+          <div class="brushes" id="brushes"></div>
+        </div>
+        <div class="block">
+          <h2 class="block-title">Действия</h2>
+          <div class="stack">
+            <button type="button" class="btn ghost" id="manual-from-workout">Скопировать из конструктора</button>
+            <button type="button" class="btn ghost" id="manual-clear">Очистить разметку</button>
+          </div>
+        </div>
+        <div class="block">
+          <h2 class="block-title">Группы целиком</h2>
+          <p class="hint">Назначьте уровень текущей кисти всей группе.</p>
+          <div class="chips" id="manual-groups"></div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Центр: карта -->
+    <section class="map-area" aria-label="Мышечная карта">
+      <div class="map-head">
+        <div class="legend" id="legend"></div>
+        <div class="seg small" role="radiogroup" aria-label="Проекция" id="view-seg">
+          <button type="button" data-view="both" role="radio">Обе</button>
+          <button type="button" data-view="front" role="radio">Спереди</button>
+          <button type="button" data-view="back" role="radio">Сзади</button>
+        </div>
+      </div>
+      <div class="figures" id="figures">
+        <figure class="figure" data-view="front">
+          <div class="svg-host" id="svg-front"></div>
+          <figcaption>Вид спереди</figcaption>
+        </figure>
+        <figure class="figure" data-view="back">
+          <div class="svg-host" id="svg-back"></div>
+          <figcaption>Вид сзади</figcaption>
+        </figure>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <!-- Правая панель: детали и сводка -->
+    <aside class="panel panel-right">
+      <div class="block details" id="details"></div>
+      <div class="block">
+        <h2 class="block-title">Нагрузка по группам</h2>
+        <div class="groups" id="groups"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/anatomy.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
