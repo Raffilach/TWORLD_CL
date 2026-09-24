@@ -1,0 +1,469 @@
+/* ==========================================================================
+   ТОКЕНЫ ОФОРМЛЕНИЯ — единственный файл, который правится при смене стиля.
+
+   Стиль: светлый «воздушный» интерфейс — бледно-голубой фон, белые
+   карточки с мягкой тенью, один насыщенный синий акцент и набор
+   спокойных тональных цветов для иконок и полос прогресса (вода —
+   синяя, белок — зелёная, добавки — жёлтая, сон — фиолетовая).
+
+   Ни один другой CSS в проекте не содержит хардкодов цвета, шрифта,
+   отступа или радиуса — только var(--...).
+
+   Предупреждения по-прежнему не «аварийные»: янтарный, а не красный.
+   Красный есть только у необратимого действия — удаления аккаунта.
+   Приложение не ругает пользователя цветом.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* --- Поверхности и текст ---------------------------------------------- */
+  --color-bg: #eef3fb;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eef2f8;
+  --color-overlay: rgba(15, 27, 51, 0.28);
+
+  --color-text: #0f1b33;
+  --color-text-secondary: #56627c;
+  --color-text-muted: #6b7590;
+  --color-text-inverse: #ffffff;
+
+  --color-border: rgba(15, 27, 51, 0.07);
+  --color-border-strong: rgba(15, 27, 51, 0.16);
+
+  /* --- Акцент ------------------------------------------------------------ */
+  --color-accent: #2f6bff;
+  --color-accent-hover: #245af0;
+  --color-accent-text: #ffffff;
+  --color-accent-subtle: #e8efff;
+  --color-accent-gradient: linear-gradient(180deg, #4480ff 0%, #2a62f5 100%);
+  --color-accent-shadow: 0 8px 20px rgba(47, 107, 255, 0.32);
+
+  /* --- Тональные цвета: иконки, полосы, метки ---------------------------- */
+  --tone-blue: #2f6bff;
+  --tone-blue-bg: #e8efff;
+  --tone-sky: #3aa0ff;
+  --tone-sky-bg: #e4f2ff;
+  --tone-green: #1fb86a;
+  --tone-green-bg: #e3f7ec;
+  --tone-teal: #14b8a6;
+  --tone-teal-bg: #dff7f3;
+  --tone-yellow: #f5b91e;
+  --tone-yellow-bg: #fff6dc;
+  --tone-orange: #ff8a1f;
+  --tone-orange-bg: #fff0e1;
+  --tone-purple: #7c5cff;
+  --tone-purple-bg: #efebff;
+  --tone-pink: #ec5aa8;
+  --tone-pink-bg: #fdebf5;
+  --tone-red: #ef4444;
+  --tone-red-bg: #fdeaea;
+
+  /* Кольцо прогресса дня: бирюзовый → зелёный. */
+  --ring-from: #16c1b4;
+  --ring-to: #34c77b;
+  --ring-track: #e7edf6;
+
+  /* --- Мышечная карта: трёхцветная шкала нагрузки и «анатомия» ----------- */
+  --load-none: #e8cfc4;
+  --load-low: #34c77b;
+  --load-mid: #f5c02a;
+  --load-high: #ef5146;
+  --body-skin: #f6e9e1;
+  --body-line: #a07e70;
+  --body-muscle-line: #b38b7d;
+  --body-detail: #c3a194;
+
+  /* --- Семантика: спокойная, без «аварийного» красного ------------------- */
+  --color-ok: #148a52;
+  --color-ok-bg: #e3f7ec;
+  --color-warn: #8a5a00;
+  --color-warn-bg: #fff6dc;
+  --color-warn-border: #f5b91e;
+  --color-info: #2a55c9;
+  --color-info-bg: #e8efff;
+  --color-danger: #e5383b;
+
+  /* Нейтральное «не отмечено». Намеренно НЕ красное:
+     пропуск — это данные, а не провал. */
+  --color-empty: #e2e8f2;
+  --color-filled: #2f6bff;
+
+  /* --- Графики ------------------------------------------------------------ */
+  --chart-1: #2f6bff;
+  --chart-2: #7c5cff;
+  --chart-3: #14b8a6;
+  --chart-4: #f5b91e;
+  --chart-5: #c9d6f2;
+  --chart-grid: #e7edf6;
+  --chart-axis: #9aa4b8;
+  --chart-trend: #2f6bff;   /* жирная линия тренда */
+  --chart-raw: #b9c8ea;     /* бледные сырые точки */
+  --chart-event: #b0b9cc;   /* вертикальные метки событий */
+
+  /* --- Типографика ------------------------------------------------------- */
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", Roboto, sans-serif;
+  --font-family-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Segoe UI", Roboto, sans-serif;
+
+  /* 16px — минимальный размер для input.
+     Меньше — и Safari принудительно зумит страницу при фокусе. */
+  --font-size-input: 16px;
+  --font-size-2xs: 0.6875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 0.9375rem;
+  --font-size-lg: 1.0625rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.625rem;
+  --font-size-3xl: 2rem;
+  --font-size-hero: 2.75rem;   /* крупная цифра веса и таймера */
+  --font-size-title: 1.75rem;  /* заголовок экрана */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.15;
+  --line-height-base: 1.45;
+  --line-height-loose: 1.65;
+
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-wide: 0.02em;
+
+  /* --- Пространство ------------------------------------------------------ */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --gutter: 1rem;           /* боковое поле экрана */
+
+  /* --- Форма -------------------------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-capsule: 999px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+  --border-width-strong: 2px;
+
+  --shadow-sm: 0 1px 2px rgba(22, 43, 92, 0.05);
+  --shadow-md: 0 4px 18px rgba(22, 43, 92, 0.07);
+  --shadow-lg: 0 14px 40px rgba(22, 43, 92, 0.14);
+
+  /* --- Слои --------------------------------------------------------------- */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-tabbar: 20;
+  --z-sheet: 30;
+  --z-toast: 40;
+
+  /* --- Движение ------------------------------------------------------------ */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --easing: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* --- Тач ------------------------------------------------------------------ */
+  --tap-min: 44px;          /* минимальная тапабельная область, Apple HIG */
+  --tap-min-lg: 52px;       /* основные действия в зоне большого пальца */
+
+  /* --- Безопасные зоны iPhone ------------------------------------------------ */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* --- Раскладка -------------------------------------------------------------- */
+  --tabbar-height: 64px;
+  --header-height: 56px;
+  --content-max-width: 720px;
+  --content-max-width-wide: 1280px;
+  --breakpoint-tablet: 640px;
+  --breakpoint-desktop: 1024px;
+}
+
+/* Тёмная тема — переопределение тех же токенов, ничего больше.
+   Набор значений повторяется ниже для ручного выбора темы. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: #0a0f1c;
+    --color-surface: #141b2d;
+    --color-surface-raised: #1a2236;
+    --color-surface-sunken: #0f1526;
+    --color-overlay: rgba(0, 0, 0, 0.55);
+
+    --color-text: #eef2fa;
+    --color-text-secondary: #a8b2c8;
+    --color-text-muted: #8a95ad;
+    --color-text-inverse: #0a0f1c;
+
+    --color-border: rgba(255, 255, 255, 0.07);
+    --color-border-strong: rgba(255, 255, 255, 0.16);
+
+    --color-accent: #4c86ff;
+    --color-accent-hover: #6497ff;
+    --color-accent-text: #ffffff;
+    --color-accent-subtle: #1b2a4d;
+    --color-accent-gradient: linear-gradient(180deg, #5a90ff 0%, #3a70f5 100%);
+    --color-accent-shadow: 0 8px 22px rgba(58, 112, 245, 0.35);
+
+    --tone-blue: #5b8fff;
+    --tone-blue-bg: #1b2a4d;
+    --tone-sky: #56b0ff;
+    --tone-sky-bg: #16304a;
+    --tone-green: #34d07f;
+    --tone-green-bg: #133526;
+    --tone-teal: #2dd4bf;
+    --tone-teal-bg: #11332f;
+    --tone-yellow: #fbc93d;
+    --tone-yellow-bg: #3a2f10;
+    --tone-orange: #ff9d45;
+    --tone-orange-bg: #3a2512;
+    --tone-purple: #9a82ff;
+    --tone-purple-bg: #251f47;
+    --tone-pink: #f27abb;
+    --tone-pink-bg: #3a1a2d;
+    --tone-red: #ff6b6b;
+    --tone-red-bg: #3a1719;
+
+    --ring-from: #22d3c5;
+    --ring-to: #3ddc84;
+    --ring-track: #1f2940;
+    --load-none: #3a3f52;
+    --load-low: #2fbf72;
+    --load-mid: #e8b624;
+    --load-high: #ec5a50;
+    --body-skin: #262c3d;
+    --body-line: #59627c;
+    --body-muscle-line: #4a5270;
+    --body-detail: #4d5673;
+
+    --color-ok: #4ade94;
+    --color-ok-bg: #133526;
+    --color-warn: #fbd168;
+    --color-warn-bg: #2f2710;
+    --color-warn-border: #c99a1b;
+    --color-info: #8fb2ff;
+    --color-info-bg: #1b2a4d;
+    --color-danger: #ff6b6b;
+
+    --color-empty: #26304a;
+    --color-filled: #4c86ff;
+
+    --chart-1: #5b8fff;
+    --chart-2: #9a82ff;
+    --chart-3: #2dd4bf;
+    --chart-4: #fbc93d;
+    --chart-5: #2c3a5c;
+    --chart-grid: #1f2940;
+    --chart-axis: #6f7a93;
+    --chart-trend: #5b8fff;
+    --chart-raw: #34466f;
+    --chart-event: #4a5675;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* Ручной выбор темы в настройках перекрывает системный. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0a0f1c;
+  --color-surface: #141b2d;
+  --color-surface-raised: #1a2236;
+  --color-surface-sunken: #0f1526;
+  --color-overlay: rgba(0, 0, 0, 0.55);
+  --color-text: #eef2fa;
+  --color-text-secondary: #a8b2c8;
+  --color-text-muted: #8a95ad;
+  --color-text-inverse: #0a0f1c;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-accent: #4c86ff;
+  --color-accent-hover: #6497ff;
+  --color-accent-text: #ffffff;
+  --color-accent-subtle: #1b2a4d;
+  --color-accent-gradient: linear-gradient(180deg, #5a90ff 0%, #3a70f5 100%);
+  --color-accent-shadow: 0 8px 22px rgba(58, 112, 245, 0.35);
+  --tone-blue: #5b8fff;
+  --tone-blue-bg: #1b2a4d;
+  --tone-sky: #56b0ff;
+  --tone-sky-bg: #16304a;
+  --tone-green: #34d07f;
+  --tone-green-bg: #133526;
+  --tone-teal: #2dd4bf;
+  --tone-teal-bg: #11332f;
+  --tone-yellow: #fbc93d;
+  --tone-yellow-bg: #3a2f10;
+  --tone-orange: #ff9d45;
+  --tone-orange-bg: #3a2512;
+  --tone-purple: #9a82ff;
+  --tone-purple-bg: #251f47;
+  --tone-pink: #f27abb;
+  --tone-pink-bg: #3a1a2d;
+  --tone-red: #ff6b6b;
+  --tone-red-bg: #3a1719;
+  --ring-from: #22d3c5;
+  --ring-to: #3ddc84;
+  --ring-track: #1f2940;
+  --load-none: #3a3f52;
+  --load-low: #2fbf72;
+  --load-mid: #e8b624;
+  --load-high: #ec5a50;
+  --body-skin: #262c3d;
+  --body-line: #59627c;
+  --body-muscle-line: #4a5270;
+  --body-detail: #4d5673;
+  --color-ok: #4ade94;
+  --color-ok-bg: #133526;
+  --color-warn: #fbd168;
+  --color-warn-bg: #2f2710;
+  --color-warn-border: #c99a1b;
+  --color-info: #8fb2ff;
+  --color-info-bg: #1b2a4d;
+  --color-danger: #ff6b6b;
+  --color-empty: #26304a;
+  --color-filled: #4c86ff;
+  --chart-1: #5b8fff;
+  --chart-2: #9a82ff;
+  --chart-3: #2dd4bf;
+  --chart-4: #fbc93d;
+  --chart-5: #2c3a5c;
+  --chart-grid: #1f2940;
+  --chart-axis: #6f7a93;
+  --chart-trend: #5b8fff;
+  --chart-raw: #34466f;
+  --chart-event: #4a5675;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.55);
+}
+
+/* ==========================================================================
+   СТЕКЛО
+
+   Мягкое «матовое стекло»: почти белая плёнка, лёгкое размытие и светлая
+   кромка. Размывают фон только слои, под которыми едет контент — шапка,
+   таб-бар, нижний лист. Карточки плотные: белая плёнка на 88% выглядит
+   так же, а прокрутка не тратит кадры на десятки фильтров.
+
+   Отключается целиком: `:root[data-surface="solid"]` или системная
+   настройка «уменьшить прозрачность».
+   ========================================================================== */
+
+:root {
+  /* --- Размытие ---------------------------------------------------------- */
+  --glass-blur: 0px;           /* карточки: без фильтра, см. выше */
+  --glass-blur-chrome: 24px;
+  --glass-blur-sheet: 30px;
+  --glass-saturate: 180%;
+
+  /* --- Плёнка ------------------------------------------------------------- */
+  --glass-film: rgba(255, 255, 255, 0.9);
+  --glass-film-chrome: rgba(255, 255, 255, 0.82);
+  --glass-film-strong: rgba(255, 255, 255, 0.97);
+  --glass-film-subtle: rgba(255, 255, 255, 0.6);
+
+  /* --- Кромка ------------------------------------------------------------- */
+  --glass-rim-top: rgba(255, 255, 255, 0.95);
+  --glass-rim-bottom: rgba(22, 43, 92, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-border-strong: rgba(255, 255, 255, 1);
+
+  /* --- Отрыв от фона -------------------------------------------------------- */
+  --glass-shadow: 0 4px 22px rgba(38, 68, 140, 0.07), 0 1px 2px rgba(38, 68, 140, 0.04);
+  --glass-shadow-raised: 0 16px 44px rgba(38, 68, 140, 0.16);
+  --glass-shadow-chrome: 0 -6px 24px rgba(38, 68, 140, 0.06);
+
+  /* --- Ambient-фон ------------------------------------------------------------ */
+  --ambient-base: #eef3fb;
+  --ambient-1: rgba(160, 196, 255, 0.55);
+  --ambient-2: rgba(196, 184, 255, 0.4);
+  --ambient-3: rgba(170, 232, 236, 0.4);
+  --ambient-4: rgba(214, 226, 255, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --glass-film: rgba(22, 30, 50, 0.88);
+    --glass-film-chrome: rgba(14, 20, 36, 0.8);
+    --glass-film-strong: rgba(24, 32, 52, 0.97);
+    --glass-film-subtle: rgba(28, 37, 60, 0.6);
+    --glass-rim-top: rgba(255, 255, 255, 0.07);
+    --glass-rim-bottom: rgba(0, 0, 0, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-strong: rgba(255, 255, 255, 0.14);
+    --glass-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+    --glass-shadow-raised: 0 16px 44px rgba(0, 0, 0, 0.6);
+    --glass-shadow-chrome: 0 -6px 24px rgba(0, 0, 0, 0.4);
+    --ambient-base: #0a0f1c;
+    --ambient-1: rgba(47, 90, 200, 0.28);
+    --ambient-2: rgba(110, 80, 200, 0.2);
+    --ambient-3: rgba(20, 130, 140, 0.16);
+    --ambient-4: rgba(40, 70, 150, 0.2);
+  }
+}
+
+:root[data-theme="dark"] {
+  --glass-film: rgba(22, 30, 50, 0.88);
+  --glass-film-chrome: rgba(14, 20, 36, 0.8);
+  --glass-film-strong: rgba(24, 32, 52, 0.97);
+  --glass-film-subtle: rgba(28, 37, 60, 0.6);
+  --glass-rim-top: rgba(255, 255, 255, 0.07);
+  --glass-rim-bottom: rgba(0, 0, 0, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-strong: rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  --glass-shadow-raised: 0 16px 44px rgba(0, 0, 0, 0.6);
+  --glass-shadow-chrome: 0 -6px 24px rgba(0, 0, 0, 0.4);
+  --ambient-base: #0a0f1c;
+  --ambient-1: rgba(47, 90, 200, 0.28);
+  --ambient-2: rgba(110, 80, 200, 0.2);
+  --ambient-3: rgba(20, 130, 140, 0.16);
+  --ambient-4: rgba(40, 70, 150, 0.2);
+}
+
+/* Отключение стекла: поверхности становятся плотными, ничего не разъезжается. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-blur-chrome: 0px;
+    --glass-blur-sheet: 0px;
+    --glass-film: var(--color-surface);
+    --glass-film-chrome: var(--color-surface);
+    --glass-film-strong: var(--color-surface);
+    --glass-film-subtle: var(--color-surface-sunken);
+    --ambient-1: transparent;
+    --ambient-2: transparent;
+    --ambient-3: transparent;
+    --ambient-4: transparent;
+  }
+}
+
+:root[data-surface="solid"] {
+  --glass-blur-chrome: 0px;
+  --glass-blur-sheet: 0px;
+  --glass-film: var(--color-surface);
+  --glass-film-chrome: var(--color-surface);
+  --glass-film-strong: var(--color-surface);
+  --glass-film-subtle: var(--color-surface-sunken);
+  --ambient-1: transparent;
+  --ambient-2: transparent;
+  --ambient-3: transparent;
+  --ambient-4: transparent;
+}

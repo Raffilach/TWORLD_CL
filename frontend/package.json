@@ -1,0 +1,42 @@
+{
+  "name": "tworld-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "e2e": "node e2e/smoke.mjs",
+    "e2e:workout": "node e2e/workout.mjs",
+    "e2e:screens": "node e2e/screens.mjs",
+    "e2e:flows": "node e2e/create-flows.mjs",
+    "e2e:offline": "node e2e/offline.mjs",
+    "e2e:pwa": "node e2e/offline-pwa.mjs",
+    "e2e:appearance": "node e2e/appearance.mjs",
+    "e2e:onboarding": "node e2e/onboarding.mjs"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.7",
+    "dexie": "^4.0.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.14",
+    "@types/react-dom": "^18.3.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "playwright": "^1.63.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vite-plugin-pwa": "^0.21.1",
+    "workbox-expiration": "^7.4.1",
+    "workbox-precaching": "^7.4.1",
+    "workbox-routing": "^7.4.1",
+    "workbox-strategies": "^7.4.1",
+    "workbox-window": "^7.4.1"
+  }
+}

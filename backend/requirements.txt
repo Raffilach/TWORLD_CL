@@ -1,0 +1,26 @@
+# Версии зафиксированы по проверенному окружению: тесты и сборка
+# прогонялись именно на них.
+Django==5.2.17
+djangorestframework==3.18.1
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.30.0
+django-cors-headers==4.9.0
+django-filter==26.1
+psycopg2-binary==2.9.13
+Pillow==12.3.0
+python-dotenv==1.2.3
+
+# Продакшн: сервер приложений и раздача статики админки.
+gunicorn==26.2.0
+whitenoise==6.12.0
+
+# PDF недельного отчёта. Требует системных Pango и Cairo — они есть
+# в backend/Dockerfile. Без библиотеки отчёт отдаётся печатаемым HTML.
+weasyprint==70.0
+
+# Web-push. Без ключей VAPID не используется.
+pywebpush==2.5.0
+
+# Тесты
+pytest==9.1.1
+pytest-django==4.14.0

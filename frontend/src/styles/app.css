@@ -1,0 +1,1449 @@
+/* Раскладка и компоненты. Все значения — из токенов. */
+
+/* ---------- Каркас приложения --------------------------------------- */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* Экраны без таб-бара (активная тренировка): липкие элементы прижимаются
+   к низу экрана, а не висят над пустым местом. */
+.app--fullscreen { --tabbar-height: 0px; }
+
+/* Шапка: крупный заголовок экрана и подпись под ним, справа — действие.
+   Стеклянная: контент проезжает под ней и остаётся угадываемым. */
+.app__header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--header-height);
+  padding: calc(var(--safe-top) + var(--space-3)) var(--gutter) var(--space-2);
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.app__header-text { display: flex; flex-direction: column; min-width: 0; }
+
+.app__title {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.app__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+.app__subtitle::first-letter { text-transform: uppercase; }
+
+.app__header-actions { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+
+/* Компактная шапка вложенного экрана: «← Жим лёжа        ⋯». */
+.app__header--compact .app__title { font-size: var(--font-size-xl); }
+
+.app__main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--gutter)
+    calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-7));
+}
+
+/* Нижний таб-бар во всю ширину: иконка над подписью, активная — синяя.
+   Индикатор домашней полоски его не перекрывает — снизу отступ на safe area. */
+.tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: var(--z-tabbar);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: var(--space-1) var(--space-2) calc(var(--safe-bottom) + var(--space-1));
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border-top: var(--border-width) solid var(--color-border);
+  box-shadow: var(--glass-shadow-chrome);
+}
+
+.tabbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  padding: var(--space-1);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--easing);
+}
+
+.tabbar__item[aria-current="page"] {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.tabbar__icon { display: inline-flex; line-height: 0; }
+.tabbar__item[aria-current="page"] .tabbar__icon { transform: translateY(-1px); }
+
+/* Плашка активной тренировки — видна на всех вкладках. */
+.active-session {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-3));
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  border-radius: var(--radius-capsule);
+  box-shadow: var(--color-accent-shadow);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+.active-session__go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- Карточки --------------------------------------------------- */
+.card {
+  position: relative;
+  background: var(--glass-film);
+  border: var(--border-width) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-rim-top);
+}
+
+.card--flat {
+  border: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+.card--sunken { background: var(--color-surface-sunken); box-shadow: none; }
+.card--tight { padding: var(--space-3); }
+.card--hero { padding: var(--space-5) var(--space-4); }
+/* Карточка-подсказка с тональной подложкой: «До цели сна — 1 ч 20 мин». */
+.card--tinted {
+  background: linear-gradient(135deg, var(--tone-bg), var(--glass-film) 85%);
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.card__title {
+  flex: 1;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: 0;
+}
+
+.card__action {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent);
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  text-decoration: none;
+}
+.card__action--muted { color: var(--color-text-secondary); }
+
+/* Заголовок секции между карточками. */
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-2);
+}
+.section-title:first-child { margin-top: var(--space-1); }
+.section-title h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ---------- Текст ------------------------------------------------------- */
+.hero-number {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.big-number {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-tight);
+}
+.big-number small,
+.unit {
+  font-size: 0.55em;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  letter-spacing: 0;
+}
+
+.muted { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.tiny { color: var(--color-text-muted); font-size: var(--font-size-xs); }
+.mono { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; }
+.strong { font-weight: var(--font-weight-semibold); }
+.stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.stack--tight { gap: var(--space-2); }
+.row { display: flex; align-items: center; gap: var(--space-2); }
+.row--between { justify-content: space-between; }
+.row--wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.center { text-align: center; }
+
+/* Изменение за период: «↓ −1,2 кг». Зелёным — движение к цели. */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+.delta--good { color: var(--tone-green); }
+.delta--neutral { color: var(--color-text-secondary); }
+
+/* ---------- Тональные цвета -------------------------------------------- */
+.tone-blue { --tone: var(--tone-blue); --tone-bg: var(--tone-blue-bg); }
+.tone-sky { --tone: var(--tone-sky); --tone-bg: var(--tone-sky-bg); }
+.tone-green { --tone: var(--tone-green); --tone-bg: var(--tone-green-bg); }
+.tone-teal { --tone: var(--tone-teal); --tone-bg: var(--tone-teal-bg); }
+.tone-yellow { --tone: var(--tone-yellow); --tone-bg: var(--tone-yellow-bg); }
+.tone-orange { --tone: var(--tone-orange); --tone-bg: var(--tone-orange-bg); }
+.tone-purple { --tone: var(--tone-purple); --tone-bg: var(--tone-purple-bg); }
+.tone-pink { --tone: var(--tone-pink); --tone-bg: var(--tone-pink-bg); }
+.tone-red { --tone: var(--tone-red); --tone-bg: var(--tone-red-bg); }
+.tone-neutral { --tone: var(--color-text-secondary); --tone-bg: var(--color-surface-sunken); }
+
+.icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--tone);
+  background: var(--tone-bg);
+  border-radius: var(--radius-sm);
+}
+.icon-tile--sm { width: 30px; height: 30px; border-radius: var(--radius-xs); }
+.icon-tile--md { width: 40px; height: 40px; }
+.icon-tile--lg { width: 52px; height: 52px; border-radius: var(--radius-md); }
+
+/* ---------- Кнопки ------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing),
+    box-shadow var(--duration-fast) var(--easing);
+}
+
+/* Нажатие прижимает кнопку: без отклика сенсорная кнопка мертва. */
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; }
+
+.btn--primary {
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  border-color: transparent;
+  box-shadow: var(--color-accent-shadow);
+}
+.btn--primary:active { box-shadow: none; }
+
+.btn--soft {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn--danger {
+  background: var(--tone-red-bg);
+  color: var(--color-danger);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn--lg {
+  min-height: var(--tap-min-lg);
+  font-size: var(--font-size-base);
+  width: 100%;
+  border-radius: var(--radius-capsule);
+}
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text-secondary);
+}
+.btn--pill { border-radius: var(--radius-pill); }
+.btn--square { padding: var(--space-2); }
+
+/* Круглая кнопка с иконкой. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border-radius: var(--radius-pill);
+  transition: transform var(--duration-fast) var(--easing);
+}
+.icon-btn:active { transform: scale(0.92); }
+.icon-btn:disabled { opacity: 0.45; }
+.icon-btn--soft { background: var(--color-accent-subtle); color: var(--color-accent); }
+.icon-btn--primary {
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  box-shadow: var(--color-accent-shadow);
+}
+.icon-btn--plain { color: var(--color-text-secondary); }
+.icon-btn--lg { width: 64px; height: 64px; }
+
+/* Основные действия — в нижней трети экрана, в зоне большого пальца. */
+.thumb-zone {
+  position: sticky;
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-2));
+  z-index: var(--z-sticky);
+  padding-top: var(--space-3);
+}
+
+/* ---------- Чипы ---------------------------------------------------------- */
+.chip {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
+}
+
+.chip:active { transform: scale(0.96); }
+
+.chip[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+/* Компактный чип всё равно держит 44×44: в зале палец не становится точнее. */
+.chip--sm {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+/* Цветной тег «Тренировка», «Настроение». */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--tone-bg, var(--color-accent-subtle));
+  color: var(--tone, var(--color-accent));
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---------- Сегментированный переключатель ------------------------------------ */
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  border: var(--border-width) solid var(--color-border);
+}
+.segmented__item {
+  flex: 1;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition:
+    background var(--duration-fast) var(--easing),
+    color var(--duration-fast) var(--easing);
+}
+.segmented__item[aria-pressed="true"] {
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 4px 12px rgba(47, 107, 255, 0.28);
+}
+/* Много вкладок: лента прокручивается вбок, край не обрезает подпись. */
+.segmented--scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-left: calc(-1 * var(--gutter));
+  margin-right: calc(-1 * var(--gutter));
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  padding: 0 var(--gutter);
+  gap: var(--space-2);
+}
+.segmented--scroll::-webkit-scrollbar { display: none; }
+.segmented--scroll .segmented__item {
+  flex: none;
+  background: var(--glass-film);
+  border: var(--border-width) solid var(--color-border);
+  padding: 0 var(--space-4);
+}
+.segmented--scroll .segmented__item[aria-pressed="true"] {
+  background: var(--color-accent-gradient);
+  border-color: transparent;
+}
+
+/* ---------- Поиск ------------------------------------------------------------ */
+.search {
+  position: relative;
+  margin-bottom: var(--space-3);
+}
+.search__icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  line-height: 0;
+}
+.search input {
+  padding-left: 2.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--glass-film);
+}
+
+/* ---------- Поля ввода ------------------------------------------------------ */
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
+.field__label { font-size: var(--font-size-sm); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.field__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+/* Крупная цифра веса — это не «поле», а само значение на карточке. */
+.number-input {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-tight);
+  text-align: left;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  min-height: var(--tap-min-lg);
+  width: 100%;
+}
+.number-input:focus { outline: none; background: transparent; border-color: transparent; box-shadow: none; }
+
+.stepper { display: flex; align-items: center; gap: var(--space-2); }
+.stepper__btn {
+  flex: none;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  transition: transform var(--duration-fast) var(--easing);
+}
+.stepper__btn:active { transform: scale(0.92); }
+.stepper__value {
+  flex: 1;
+  min-height: var(--tap-min);
+  text-align: center;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+/* Шкала 1–5 и 1–10: кнопки видны сразу, без модалок. */
+.scale { display: flex; gap: var(--space-1); }
+.scale__btn {
+  flex: 1;
+  min-height: var(--tap-min);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
+}
+.scale__btn:active { transform: scale(0.94); }
+.scale__btn[aria-pressed="true"] {
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+}
+
+/* Шкала точками «●●●●○». */
+.dot-scale { display: flex; margin: 0 calc(-1 * var(--space-2)); }
+.dot-scale__btn {
+  flex: 1;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: var(--space-2);
+}
+.dot-scale__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-empty);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
+}
+.dot-scale__btn[data-filled="true"] .dot-scale__dot { background: var(--tone); }
+.dot-scale__btn:active .dot-scale__dot { transform: scale(0.85); }
+
+/* Переключатель iOS. */
+.toggle {
+  position: relative;
+  flex: none;
+  width: 51px;
+  height: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+}
+.toggle::before {
+  content: "";
+  width: 51px;
+  height: 31px;
+  border-radius: var(--radius-pill);
+  background: var(--color-empty);
+  transition: background var(--duration-base) var(--easing);
+}
+.toggle__knob {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  margin-top: -13.5px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: transform var(--duration-base) var(--easing);
+}
+.toggle[aria-checked="true"]::before { background: var(--tone-green); }
+.toggle[aria-checked="true"] .toggle__knob { transform: translateX(20px); }
+
+/* ---------- Индикаторы ------------------------------------------------------- */
+.progress {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-empty);
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  background: var(--tone, var(--color-filled));
+  border-radius: var(--radius-pill);
+  transition: width var(--duration-base) var(--easing);
+}
+
+/* Кольцо прогресса. */
+.ring { position: relative; flex: none; }
+.ring svg { display: block; }
+.ring__arc { transition: stroke-dasharray var(--duration-slow) var(--easing); }
+.ring__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: var(--line-height-tight);
+}
+
+/* Метрика дня: плитка, подпись, полоса, значение и «+». */
+.metric {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.metric + .metric { border-top: var(--border-width) solid var(--color-border); }
+.metric__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.metric__top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.metric__label { font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); }
+.metric__value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.metric__value small { color: var(--color-text-muted); font-weight: var(--font-weight-medium); font-size: inherit; }
+
+/* Счётчик воды: тап по кружку = стакан. */
+.dots { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.dot {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-accent);
+  transition: transform var(--duration-fast) var(--easing);
+}
+.dot:active { transform: scale(0.9); }
+.dot--filled { background: var(--tone-sky); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.badge[class*="tone-"] { background: var(--tone-bg); color: var(--tone); }
+
+.notice {
+  display: block;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-warn-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  border-left: 3px solid var(--color-warn-border);
+}
+.notice--info { background: var(--color-info-bg); border-left-color: var(--color-accent); }
+
+.empty {
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+.loading__spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-accent-subtle);
+  border-top-color: var(--color-accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Списки ------------------------------------------------------------ */
+.list { display: flex; flex-direction: column; }
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  padding: var(--space-3) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+  text-align: left;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+.list__item:last-child { border-bottom: none; }
+
+/* Строка меню: «[иконка] Уведомления            ›». */
+.menu {
+  padding: var(--space-1) var(--space-4);
+}
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-2) 0;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+.list-row:last-child { border-bottom: none; }
+.list-row:active { opacity: 0.6; }
+.list-row__icon { color: var(--color-text); line-height: 0; flex: none; }
+.list-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.list-row__title { font-size: var(--font-size-base); font-weight: var(--font-weight-medium); }
+.list-row__subtitle { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 1px; }
+.list-row__value { font-size: var(--font-size-sm); color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.list-row__chevron { color: var(--color-text-muted); line-height: 0; flex: none; }
+.list-row--danger,
+.list-row--danger .list-row__icon { color: var(--color-danger); }
+
+/* Карточка-строка: плитка слева, текст, шеврон. Ближайшие тренировки. */
+.tile-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+}
+.tile-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tile-row__title { font-weight: var(--font-weight-semibold); font-size: var(--font-size-base); }
+.tile-row__meta { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+.tile-row__chevron { color: var(--color-text-muted); line-height: 0; }
+a.card.tile-row,
+button.card.tile-row { transition: transform var(--duration-fast) var(--easing); }
+a.card.tile-row:active,
+button.card.tile-row:active { transform: scale(0.985); }
+
+/* Свайп по строке подхода — удалить. */
+.swipe-row { position: relative; overflow: hidden; touch-action: pan-y; border-radius: var(--radius-sm); }
+.swipe-row__content {
+  position: relative;
+  z-index: 1;
+  /* Непрозрачно намеренно: под строкой лежит «Удалить»,
+     и он должен появляться только при свайпе. */
+  background: var(--glass-film-strong);
+  transition: transform var(--duration-fast) var(--easing);
+  will-change: transform;
+}
+.swipe-row__action {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing);
+}
+
+.swipe-row[data-swiping="true"] .swipe-row__action { opacity: 1; }
+
+/* Строка подхода — сетка как таблица: № · кг · повторы · RIR · удалить. */
+.set-table__head,
+.set-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 1fr 44px 44px;
+  align-items: center;
+  gap: var(--space-2);
+}
+.set-table__head {
+  padding: 0 0 var(--space-1);
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  text-align: center;
+}
+.set-row { padding: 3px 0; }
+.set-row__num {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+.set-row__cell {
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.set-row__rir { text-align: center; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.set-row--warmup .set-row__num { background: var(--tone-orange-bg); color: var(--tone-orange); }
+.set-row--warmup .set-row__cell { color: var(--color-text-secondary); }
+
+/* ---------- Экран тренировки ----------------------------------------------------- */
+.block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+.block-header span:last-child {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.exercise-item {
+  border: var(--border-width) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-film);
+  box-shadow: var(--glass-shadow);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  transition: box-shadow var(--duration-base) var(--easing);
+}
+/* Текущее упражнение: синяя кромка — взгляд между подходами
+   находит его мгновенно. */
+.exercise-item--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle), var(--glass-shadow);
+}
+.exercise-item--done { opacity: 0.78; }
+
+.exercise-item__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 60px;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+}
+.exercise-item__chevron { color: var(--color-text-muted); line-height: 0; }
+.exercise-item__body { padding: 0 var(--space-4) var(--space-4); }
+
+.status-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-strong) solid var(--color-border-strong);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+.status-dot--done { background: var(--tone-green); border-color: var(--tone-green); }
+.status-dot--skipped { background: var(--color-empty); border-color: var(--color-empty); }
+.status-dot--failed { border-style: dashed; }
+
+/* Карточка таймера отдыха: «Отдых 1:30 · Следующий подход ▶». */
+.rest-timer {
+  position: sticky;
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-3));
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-3) var(--gutter) 0;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--glass-film-chrome);
+  -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  border: var(--border-width) solid var(--glass-border);
+  box-shadow: var(--glass-shadow-raised);
+}
+.rest-timer__time {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1;
+}
+.rest-timer__ring { position: relative; flex: none; }
+
+.stopwatch-display {
+  min-width: 60%;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.timer-display {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-tight);
+  text-align: center;
+}
+
+/* ---------- Нижний лист ------------------------------------------------------------ */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: flex-end;
+  animation: fade-in var(--duration-base) var(--easing);
+}
+.sheet {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  max-height: 88dvh;
+  overflow-y: auto;
+  background: var(--glass-film-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sheet)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-sheet)) saturate(var(--glass-saturate));
+  box-shadow: var(--glass-shadow-raised);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-2) var(--gutter) calc(var(--safe-bottom) + var(--space-5));
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  animation: sheet-up var(--duration-slow) var(--easing);
+}
+.sheet__handle {
+  width: 36px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  margin: 0 auto var(--space-3);
+}
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.sheet__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+@keyframes sheet-up { from { transform: translateY(24px); opacity: 0.6; } }
+@keyframes fade-in { from { opacity: 0; } }
+
+/* ---------- Цифровая клавиатура ------------------------------------------------------ */
+.keypad-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1) var(--space-3);
+}
+.keypad-display__value {
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.keypad-display__caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  vertical-align: -0.08em;
+  background: var(--color-accent);
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+.keypad__key {
+  min-height: 50px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
+}
+.keypad__key:active { transform: scale(0.95); background: var(--color-accent-subtle); }
+
+/* ---------- Тост отмены -------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--tabbar-height) + var(--safe-bottom) + var(--space-5));
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-capsule);
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  box-shadow: var(--glass-shadow-raised);
+  font-size: var(--font-size-sm);
+  animation: sheet-up var(--duration-base) var(--easing);
+}
+/* На экране тренировки снизу висит таймер отдыха — тост встаёт над ним. */
+body:has(.rest-timer) .toast { bottom: calc(var(--safe-bottom) + 96px); }
+
+.toast__action {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-hover);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------- Статус синхронизации ---------------------------------------------------------- */
+.sync-status {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--tone-green);
+}
+.sync-status[data-state="pending"]::before { background: var(--tone-yellow); }
+.sync-status[data-state="offline"]::before { background: var(--color-text-muted); }
+
+/* ---------- «Друзья» ------------------------------------------------------------------------ */
+.friends-art {
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto var(--space-3);
+  display: block;
+}
+.feature-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.feature-list__item { display: flex; gap: var(--space-3); align-items: center; }
+.feature-list__marker {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  margin-top: 0.5em;
+  flex: none;
+}
+
+/* Поле с кнопкой-стрелкой внутри: «Что ещё добавить?  →». */
+.input-action { position: relative; }
+.input-action input { padding-right: 3.25rem; border-radius: var(--radius-pill); }
+.input-action .icon-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ---------- Профиль ------------------------------------------------------------------------- */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.profile-card__name { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+
+/* ---------- Графики ------------------------------------------------------------------------ */
+.chart-wrap { width: 100%; height: 220px; margin: var(--space-2) 0; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.chart-legend__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: var(--space-1);
+}
+
+/* Две колонки даже на телефоне: короткие карточки-метрики. */
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-3); }
+.grid-2 > .card { margin-bottom: 0; padding: var(--space-3); }
+.grid-2 > .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.grid-2 .card__title { font-size: var(--font-size-sm); }
+.grid-2 .big-number { font-size: var(--font-size-xl); }
+.grid-2 .muted { font-size: var(--font-size-xs); margin-top: 2px; }
+
+/* Теплокарта года */
+.heatmap { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 2px; overflow-x: auto; }
+.heatmap__cell { width: 11px; height: 11px; border-radius: 3px; background: var(--color-surface-sunken); }
+
+/* Плитки-статистики в ряд: «Тренировки 4/5 · Сон 7 ч 12 мин · Белок 112 г». */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.stat-grid .card { margin-bottom: 0; padding: var(--space-3); }
+.stat__label { font-size: var(--font-size-xs); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.stat__value { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+/* ---------- Формы входа ---------------------------------------------------------------------- */
+.auth {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + var(--space-7)) var(--gutter) calc(var(--safe-bottom) + var(--space-6));
+}
+.auth__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--color-accent-shadow);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Мышечная карта --------------------------------------------------------------------- */
+.muscle-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--space-2);
+  max-width: 460px;
+  margin: 0 auto;
+}
+.muscle-map--compact { max-width: 300px; }
+.muscle-map__figure { margin: 0; text-align: center; }
+.muscle-map__figure svg { display: block; width: 100%; height: auto; }
+.muscle-map__figure figcaption {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+.muscle-map__skin { fill: var(--body-skin); }
+.muscle-map__ear { stroke: var(--body-line); stroke-width: 1.1; }
+.muscle-map__muscle {
+  stroke: var(--body-muscle-line);
+  stroke-width: 0.7;
+  transition: fill var(--duration-base) var(--easing), opacity var(--duration-base) var(--easing);
+}
+.muscle-map__muscle.is-interactive { cursor: pointer; }
+.muscle-map__muscle.is-interactive:hover { opacity: 0.85; }
+.muscle-map__muscle.is-selected { stroke: var(--color-text); stroke-width: 2.4; }
+.muscle-map__muscle.is-dim { opacity: 0.45; }
+.muscle-map__muscle:focus-visible { outline: none; stroke: var(--color-accent); stroke-width: 3; }
+.muscle-map__detail { fill: none; stroke: var(--body-detail); stroke-width: 0.9; stroke-linecap: round; pointer-events: none; }
+.muscle-map__outline { fill: none; stroke: var(--body-line); stroke-width: 1.5; stroke-linejoin: round; pointer-events: none; }
+.muscle-map__floor { fill: var(--body-line); opacity: 0.15; }
+
+/* Легенда шкалы: «● Высокая ≥ 12  ● Средняя 6–12 …». */
+.load-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.load-legend__item { display: inline-flex; align-items: center; gap: 6px; }
+.load-dot { width: 10px; height: 10px; border-radius: var(--radius-pill); flex: none; display: inline-block; }
+.load-dot--0 { background: var(--load-none); }
+.load-dot--1 { background: var(--load-low); }
+.load-dot--2 { background: var(--load-mid); }
+.load-dot--3 { background: var(--load-high); }
+
+/* Полоса группы: доли мышц по зонам. */
+.zone-bar { display: flex; height: 6px; border-radius: var(--radius-pill); overflow: hidden; background: var(--color-empty); gap: 2px; }
+.zone-bar > span { display: block; height: 100%; }
+.zone-bar .z0 { background: var(--load-none); }
+.zone-bar .z1 { background: var(--load-low); }
+.zone-bar .z2 { background: var(--load-mid); }
+.zone-bar .z3 { background: var(--load-high); }
+
+/* Чип мышцы со значением: «● Большая ягодичная 9,5». */
+.muscle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap-min);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+.muscle-chip b { font-variant-numeric: tabular-nums; }
+
+/* ---------- Стартовый опрос ------------------------------------------------------------------ */
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + var(--space-2)) var(--gutter) 0;
+}
+.onboarding__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 calc(-1 * var(--space-2)) var(--space-2);
+}
+.onboarding__progress {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-empty);
+  overflow: hidden;
+}
+.onboarding__progress-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-gradient);
+  transition: width var(--duration-slow) var(--easing);
+}
+.onboarding__body { flex: 1; padding-bottom: var(--space-4); animation: step-in var(--duration-slow) var(--easing); }
+@keyframes step-in { from { opacity: 0; transform: translateX(12px); } }
+.onboarding__title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-bottom: var(--space-2);
+}
+.onboarding__lead { margin-bottom: var(--space-5); font-size: var(--font-size-base); }
+.onboarding__question .field__label { margin-top: var(--space-2); }
+.onboarding__question .segmented { margin-bottom: var(--space-2); }
+.onboarding__welcome { text-align: center; padding-top: var(--space-7); }
+.onboarding__welcome .onboarding__lead { max-width: 380px; margin-left: auto; margin-right: auto; }
+.onboarding__perks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  text-align: left;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.onboarding__hero {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto var(--space-5);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-text);
+  background: var(--color-accent-gradient);
+  box-shadow: var(--color-accent-shadow);
+}
+.onboarding__hero--done { background: linear-gradient(135deg, var(--ring-from), var(--ring-to)); box-shadow: 0 10px 28px rgba(31, 184, 106, 0.3); }
+.onboarding__hero-ring {
+  position: absolute;
+  inset: -14px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-accent-subtle);
+  animation: pulse 2.4s var(--easing) infinite;
+}
+@keyframes pulse { 50% { transform: scale(1.06); opacity: 0.5; } }
+.onboarding__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) 0 calc(var(--safe-bottom) + var(--space-4));
+}
+
+/* Карточка-вариант: «Похудеть · Снизить вес, сохранив мышцы  ✓». */
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  text-align: left;
+  border-radius: var(--radius-lg);
+  background: var(--glass-film);
+  border: var(--border-width-strong) solid transparent;
+  box-shadow: var(--glass-shadow);
+  transition:
+    transform var(--duration-fast) var(--easing),
+    border-color var(--duration-fast) var(--easing),
+    background var(--duration-fast) var(--easing);
+}
+.choice-card:active { transform: scale(0.98); }
+.choice-card[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-accent-subtle), var(--glass-film) 80%);
+}
+.choice-card--compact { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+.choice-card__check {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  border: var(--border-width-strong) solid var(--color-border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+.choice-card[aria-pressed="true"] .choice-card__check { background: var(--color-accent); border-color: var(--color-accent); }
+
+/* Дни недели: семь кружков в ряд. */
+.weekday-picker { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-1); margin-bottom: var(--space-2); }
+.weekday-picker__day {
+  min-height: var(--tap-min);
+  border-radius: var(--radius-md);
+  background: var(--glass-film);
+  border: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  transition: transform var(--duration-fast) var(--easing);
+}
+.weekday-picker__day:active { transform: scale(0.94); }
+.weekday-picker__day[aria-pressed="true"] {
+  background: var(--color-accent-gradient);
+  color: var(--color-accent-text);
+  border-color: transparent;
+}
+
+/* Поле числа с единицей справа: «72,4  кг». */
+.unit-input { position: relative; display: block; }
+.unit-input input { padding-right: 3rem; font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); min-height: var(--tap-min-lg); }
+.unit-input__unit {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  pointer-events: none;
+}
+
+/* ---------- Адаптив --------------------------------------------------------------------------
+   На десктопе — многоколоночная раскладка, а не растянутый мобильный экран. */
+@media (min-width: 640px) {
+  .app__main { padding-left: var(--space-5); padding-right: var(--space-5); }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: start; }
+  .tabbar { padding-left: calc(50% - 360px); padding-right: calc(50% - 360px); }
+}
+
+@media (min-width: 1024px) {
+  .app { flex-direction: row; }
+  .app__main {
+    max-width: var(--content-max-width-wide);
+    padding-bottom: var(--space-6);
+  }
+  .cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); align-items: start; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+
+  /* Таб-бар превращается в боковую навигацию. */
+  .tabbar {
+    position: sticky;
+    top: var(--space-4);
+    inset: var(--space-4) auto var(--space-4) var(--space-4);
+    height: calc(100dvh - var(--space-6));
+    width: 232px;
+    flex: none;
+    grid-template-columns: 1fr;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-3);
+    margin: var(--space-4) 0 var(--space-4) var(--space-4);
+    border: var(--border-width) solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    background: var(--glass-film);
+    box-shadow: var(--glass-shadow);
+  }
+  .tabbar__item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--tap-min);
+    font-size: var(--font-size-base);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+  .tabbar__item[aria-current="page"] { background: var(--color-accent-subtle); }
+  .active-session, .toast, .thumb-zone, .rest-timer { bottom: var(--space-4); }
+  .thumb-zone { position: static; }
+}
